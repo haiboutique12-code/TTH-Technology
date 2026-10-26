@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TTH Technology — Nền Tảng Quản Lý Thiết Bị Tập Trung (Enterprise MDM & User Portal)</title>
+  <meta name="description" content="Hệ thống quản lý thiết bị doanh nghiệp, kiểm soát an ninh Zero-Trust, cổng thông tin tự phục vụ nhân viên và trung tâm quản trị IT TTH Technology.">
+  
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Design System Stylesheet & Portal Extensions -->
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/portal-ext.css">
+</head>
+<body>
+
+<!-- Top Maintenance Mode Broadcast Alert Banner (Toggleable) -->
+<div class="maintenance-banner" id="maintenanceBanner">
+  <span>⚠️ CẢNH BÁO BẢO TRÌ: Hệ thống MDM Gateway đang thực hiện nâng cấp cụm máy chủ APNs. Các thao tác vẫn được xếp hàng xử lý an toàn.</span>
+  <button class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.4); color:#fff;" onclick="TTH.toggleMaintenanceMode()">Đóng cảnh báo</button>
+</div>
+
+<div class="demo-disclaimer" role="note">
+  <span aria-hidden="true">ⓘ</span> Bản demo học tập: dữ liệu và thao tác MDM/APNs, định vị, khóa/xóa thiết bị, cài ứng dụng và thanh toán chỉ được mô phỏng trên trình duyệt; không kết nối thiết bị hoặc dịch vụ thật.
+</div>
+
+<div class="app-container">
+
+  <!-- =========================================================================
+       SIDEBAR NAVIGATION (DYNAMIC: ADMIN NAV vs USER NAV)
+       ========================================================================= -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="brand-badge" data-goto="overview">
+        <div class="brand-logo">TTH</div>
+        <div class="brand-info">
+          <h2>TTH Technology</h2>
+          <span class="brand-tagline">Device Intelligence</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Workspace Selector Pill -->
+    <button class="workspace-selector-btn" data-goto="admin" title="Nhấn để quản lý hoặc chuyển đổi workspace">
+      <div class="workspace-pill">
+        <span class="workspace-pill-dot"></span>
+        <span id="currentWsBadgeName" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:160px;">Trụ sở chính Hà Nội</span>
+      </div>
+      <span style="font-size: 10px; opacity:0.6;">▼</span>
+    </button>
+
+    <div class="sidebar-nav-container">
+
+      <!-- ==========================================
+           1. NAVIGATION FOR ADMIN CONSOLE (DEFAULT)
+           ========================================== -->
+      <div id="sidebarAdminNav">
+        <div class="nav-section-title">Quản Trị Thiết Bị</div>
+        <nav class="sidebar-nav">
+          <button class="nav-item active" data-page="overview">
+            <span class="nav-icon">▦</span>
+            <span>Tổng quan hệ thống</span>
+          </button>
+          <button class="nav-item" data-page="devices">
+            <span class="nav-icon">▣</span>
+            <span>Thiết bị doanh nghiệp</span>
+            <span class="nav-badge" id="navDeviceBadge">248</span>
+          </button>
+          <button class="nav-item" data-page="security">
+            <span class="nav-icon">🛡️</span>
+            <span>Bảo mật & Chính sách</span>
+          </button>
+          <button class="nav-item" data-page="reports">
+            <span class="nav-icon">▤</span>
+            <span>Báo cáo & Phân tích</span>
+          </button>
+        </nav>
+
+        <div class="nav-section-title">Hạ Tầng & Người Dùng</div>
+        <nav class="sidebar-nav">
+          <button class="nav-item" data-page="admin-users">
+            <span class="nav-icon">👥</span>
+            <span>Quản lý người dùng (RBAC)</span>
+          </button>
+          <button class="nav-item" data-page="admin-telemetry">
+            <span class="nav-icon">🖥️</span>
+            <span>Giám sát máy chủ & APNs</span>
+          </button>
+          <button class="nav-item" data-page="admin">
+            <span class="nav-icon">⚙️</span>
+            <span>Admin Console & Chi nhánh</span>
+          </button>
+        </nav>
+
+        <div class="nav-section-title">Tài Chính & Hỗ Trợ</div>
+        <nav class="sidebar-nav">
+          <button class="nav-item" data-page="billing">
+            <span class="nav-icon">💳</span>
+            <span>Gói dịch vụ & Chi phí</span>
+          </button>
+          <button class="nav-item" data-page="support">
+            <span class="nav-icon">💬</span>
+            <span>Trung tâm hỗ trợ</span>
+            <span class="nav-badge danger">1</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- ==========================================
+           2. NAVIGATION FOR USER PORTAL (EMPLOYEE)
+           ========================================== -->
+      <div id="sidebarUserNav" style="display:none;">
+        <div class="nav-section-title">Cổng Tự Phục Vụ Nhân Viên</div>
+        <nav class="sidebar-nav">
+          <button class="nav-item active" data-page="user-devices">
+            <span class="nav-icon">📱</span>
+            <span>Thiết bị của tôi</span>
+            <span class="nav-badge" style="background:var(--success); color:#fff;">2 máy</span>
+          </button>
+          <button class="nav-item" data-page="user-apps">
+            <span class="nav-icon">🛍️</span>
+            <span>Cửa hàng ứng dụng nội bộ</span>
+          </button>
+          <button class="nav-item" data-page="user-requests">
+            <span class="nav-icon">📦</span>
+            <span>Yêu cầu cấp phát thiết bị</span>
+            <span class="nav-badge warning">1 đang giao</span>
+          </button>
+          <button class="nav-item" data-page="user-emergency">
+            <span class="nav-icon">🆘</span>
+            <span>Báo mất & Trợ giúp khẩn</span>
+          </button>
+        </nav>
+
+        <div class="nav-section-title">Tài Liệu & Trợ Giúp</div>
+        <nav class="sidebar-nav">
+          <button class="nav-item" data-page="user-handbook">
+            <span class="nav-icon">📖</span>
+            <span>Sổ tay IT & Kết nối WiFi/VPN</span>
+          </button>
+          <button class="nav-item" data-page="support">
+            <span class="nav-icon">💬</span>
+            <span>Yêu cầu hỗ trợ của tôi</span>
+          </button>
+        </nav>
+      </div>
+
+    </div>
+
+    <!-- Sidebar Footer with Plan Card & Active User Profile -->
+    <div class="sidebar-footer">
+      <div class="sidebar-plan-card">
+        <div class="plan-card-header">
+          <span class="plan-badge">Business Plan</span>
+          <span class="plan-quota-text">248 / 500 máy</span>
+        </div>
+        <div class="plan-progress-bar">
+          <div class="plan-progress-fill" style="width: 49.6%;"></div>
+        </div>
+        <button class="plan-action-btn" data-goto="billing">Quản lý thuê bao ↗</button>
+      </div>
+
+      <div class="user-profile-widget">
+        <div class="user-avatar" id="sidebarUserAvatar">TH</div>
+        <div class="user-info">
+          <div class="user-name" id="sidebarUserName">Quản trị viên IT</div>
+          <div class="user-role" id="sidebarUserEmail">security@tth.vn · SOC</div>
+        </div>
+        <button class="topbar-icon-btn" style="width:30px; height:30px; border:none; background:transparent; color:#94a3b8;" onclick="TTH.toggleRole()" title="Nhấn để đổi vai trò nhanh">⇄</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Mobile Overlay -->
+  <div class="sidebar-mobile-overlay" id="sidebarOverlay"></div>
+
+  <!-- =========================================================================
+       MAIN CONTENT WRAPPER
+       ========================================================================= -->
+  <div class="main-wrapper">
+
+    <!-- Sticky Topbar Navigation with Role Switcher -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Mở menu">☰</button>
+        
+        <div class="breadcrumb-nav">
+          <span>TTH Platform</span>
+          <span>/</span>
+          <span class="current-page" id="currentBreadcrumb">Tổng quan hệ thống</span>
+        </div>
+
+        <span class="status-pill status-warning" id="portalModeBadge">👑 QUYỀN QUẢN TRỊ VIÊN</span>
+      </div>
+
+      <div class="topbar-right">
+        <!-- Interactive Role Switcher Widget -->
+        <div class="role-switcher-box" title="Chuyển đổi tức thì giữa Giao diện Quản trị viên và Cổng thông tin nhân viên">
+          <button class="role-switcher-btn active admin-mode" id="roleSwitchAdminBtn">
+            <span>👑</span>
+            <span>Admin</span>
+          </button>
+          <button class="role-switcher-btn" id="roleSwitchUserBtn">
+            <span>👤</span>
+            <span>Nhân Viên (User)</span>
+          </button>
+        </div>
+
+        <!-- Quick Search Command Palette Trigger -->
+        <button class="command-search-btn" id="cmdSearchBtn" title="Gõ phím tắt Ctrl + K để tìm kiếm nhanh">
+          <span>🔍 Tìm kiếm nhanh...</span>
+          <span class="search-shortcut">Ctrl K</span>
+        </button>
+
+        <!-- Theme Toggle Button -->
+        <button class="topbar-icon-btn" id="themeToggleBtn" title="Chuyển đổi giao diện Sáng / Tối">🌙</button>
+
+        <!-- Notification Bell -->
+        <button class="topbar-icon-btn" id="notificationBtn" title="Xem thông báo hệ thống">
+          🔔
+          <span class="notification-count-dot"></span>
+        </button>
+
+        <!-- Quick Help -->
+        <button class="topbar-icon-btn" data-goto="support" title="Trợ giúp">❓</button>
+
+        <!-- User Avatar -->
+        <div class="user-avatar" id="topbarUserAvatar" style="width:36px; height:36px; cursor:pointer;" onclick="TTH.toggleRole()" title="Nhấp để đổi giao diện User / Admin">TH</div>
+      </div>
+    </header>
+
+    <!-- Page Body Container -->
+    <main class="content-body">
+
+      <!-- =====================================================================
+           ADMIN VIEW 1: TỔNG QUAN HỆ THỐNG (EXECUTIVE DASHBOARD)
+           ===================================================================== -->
+      <section class="page-view active" id="view-overview">
+        <div class="view-header">
+          <div>
+            <div class="view-meta">
+              <span class="view-badge">Bảng điều khiển Quản trị</span>
+              <span class="live-datetime" id="liveHeaderClock">Đang tải thời gian...</span>
+            </div>
+            <h1>Bảng điều khiển Quản trị Hệ thống 👋</h1>
+            <p>Giám sát toàn diện 248 thiết bị máy tính và di động, quản lý bảo mật Zero-Trust và trạng thái kết nối mạng nội bộ.</p>
+          </div>
+
+          <div class="header-action-group">
+            <button class="btn btn-secondary" onclick="TTH.setRole('user')">
+              <span>👤</span> Xem Giao diện Nhân Viên (User Mode) ↗
+            </button>
+            <button class="btn btn-secondary" onclick="TTH.openQrEnrollModal()">
+              <span>📱</span> Quét QR Enroll
+            </button>
+            <button class="btn btn-primary" onclick="TTH.openAddDeviceModal()">
+              <span>＋</span> Thêm thiết bị mới
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 KPI Metrics -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Tổng thiết bị quản trị</span>
+              <div class="stat-icon-wrapper stat-icon-primary">▣</div>
+            </div>
+            <div class="stat-value" id="metricTotalDevices">248</div>
+            <div class="stat-meta">
+              <span class="trend-up">↑ 14 máy</span>
+              <span class="trend-neutral">gia tăng trong tháng 10</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Đang trực tuyến (Active)</span>
+              <div class="stat-icon-wrapper stat-icon-success">⌁</div>
+            </div>
+            <div class="stat-value" id="metricOnlineDevices">216</div>
+            <div class="stat-meta">
+              <span class="trend-up">87.1%</span>
+              <span class="trend-neutral">tỷ lệ kết nối mạng nội bộ</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Cảnh báo bảo mật</span>
+              <div class="stat-icon-wrapper stat-icon-warning">⚠️</div>
+            </div>
+            <div class="stat-value" id="metricWarningDevices" style="color:var(--warning);">07</div>
+            <div class="stat-meta">
+              <span class="trend-warn">Cần xử lý</span>
+              <span class="trend-neutral">mã hóa & bản vá cũ</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Tuân thủ Zero-Trust</span>
+              <div class="stat-icon-wrapper stat-icon-purple">🛡️</div>
+            </div>
+            <div class="stat-value" id="metricComplianceRate" style="color:var(--primary);">94.2%</div>
+            <div class="stat-meta">
+              <span class="trend-up">↑ 2.4%</span>
+              <span class="trend-neutral">đạt tiêu chuẩn an toàn ISO</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Chart & Health Grid -->
+        <div class="dashboard-grid">
+          <!-- Interactive Activity Timeline Chart -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3>Hoạt động kết nối thiết bị theo thời gian</h3>
+                <p>Số lượng thiết bị duy trì trạng thái online và đồng bộ chính sách</p>
+              </div>
+              <div style="display:flex; gap:6px;">
+                <button class="btn btn-secondary btn-sm active" data-timeframe="7">7 ngày qua</button>
+                <button class="btn btn-secondary btn-sm" data-timeframe="30">30 ngày qua</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <svg class="chart-svg" id="activityChartSvg" viewBox="0 0 640 210" preserveAspectRatio="none"></svg>
+                <div class="chart-tooltip" id="chartTooltip"></div>
+              </div>
+              <div class="chart-legend">
+                <div class="legend-item">
+                  <span class="legend-dot" style="background:#3b82f6;"></span>
+                  <span>Thiết bị gửi tín hiệu Keep-Alive hợp lệ</span>
+                </div>
+                <div class="legend-item">
+                  <span class="legend-dot" style="background:#94a3b8;"></span>
+                  <span>Mức tải đồng bộ nền tảng APNs & FCM</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fleet Health & Security Overview -->
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3>Tình trạng phân bổ hệ thống</h3>
+                <p>Tỷ lệ trạng thái hoạt động thực tế</p>
+              </div>
+              <button class="btn btn-secondary btn-sm" data-goto="devices">Xem toàn bộ →</button>
+            </div>
+            <div class="card-body">
+              <div class="health-meter-list">
+                <div class="health-meter-item">
+                  <div class="health-meter-labels">
+                    <span style="color:var(--success);">Trực tuyến (Online)</span>
+                    <span id="countOnline">216</span>
+                  </div>
+                  <div class="health-progress-track">
+                    <div class="health-progress-fill" id="barOnline" style="width: 87%; background: var(--success);"></div>
+                  </div>
+                </div>
+
+                <div class="health-meter-item">
+                  <div class="health-meter-labels">
+                    <span style="color:var(--warning);">Cảnh báo cần kiểm tra</span>
+                    <span id="countWarning">7</span>
+                  </div>
+                  <div class="health-progress-track">
+                    <div class="health-progress-fill" id="barWarning" style="width: 3%; background: var(--warning);"></div>
+                  </div>
+                </div>
+
+                <div class="health-meter-item">
+                  <div class="health-meter-labels">
+                    <span style="color:var(--text-muted);">Ngoại tuyến & Khóa máy</span>
+                    <span id="countOffline">25</span>
+                  </div>
+                  <div class="health-progress-track">
+                    <div class="health-progress-fill" id="barOffline" style="width: 10%; background: var(--text-muted);"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Compliance Hero Gauge Card -->
+              <div class="compliance-hero-card">
+                <div class="compliance-hero-header">
+                  <span style="font-size:12px; font-weight:700;">Chỉ số tuân thủ Zero-Trust</span>
+                  <span style="font-size:11px; color:var(--success); font-weight:700;">↑ 2.4% Đạt chuẩn</span>
+                </div>
+                <div class="compliance-hero-score" id="heroComplianceScore">94.2%</div>
+                <div class="health-progress-track" style="margin-top: 10px;">
+                  <div class="health-progress-fill" id="heroComplianceBar" style="width: 94.2%; background: var(--brand-gradient);"></div>
+                </div>
+                <p style="font-size:11px; color:var(--text-muted); margin-top:8px;">
+                  241/248 thiết bị đã bật mã hóa BitLocker/FileVault và kích hoạt mã PIN bảo vệ màn hình.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Devices Table -->
+        <div class="card table-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3>Thiết bị đăng ký gần đây</h3>
+              <p>Danh sách các thiết bị mới nhất đã đồng bộ vào workspace này</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" data-goto="devices">Quản lý tất cả thiết bị →</button>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Tên thiết bị & Mã Asset</th>
+                  <th>Người sử dụng</th>
+                  <th>Hệ điều hành</th>
+                  <th>Trạng thái</th>
+                  <th>Pin</th>
+                  <th>Đồng bộ gần nhất</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="recentDevicesRows">
+                <!-- Dynamically Rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           ADMIN VIEW 2: QUẢN LÝ THIẾT BỊ (DEVICE FLEET)
+           ===================================================================== -->
+      <section class="page-view" id="view-devices">
+        <div class="view-header">
+          <div>
+            <div class="view-meta">
+              <span class="view-badge">Device Inventory</span>
+              <span>Tổng số: <strong id="statAllDevices">248</strong> máy</span>
+            </div>
+            <h1>Quản lý đội ngũ thiết bị (Device Fleet)</h1>
+            <p>Kiểm soát toàn diện vòng đời thiết bị, thông số phần cứng, vị trí địa lý và thực thi hành động điều khiển từ xa qua MDM.</p>
+          </div>
+
+          <div class="header-action-group">
+            <button class="btn btn-secondary" onclick="TTH.exportCsv('devices')">
+              <span>📥</span> Xuất danh sách CSV
+            </button>
+            <button class="btn btn-secondary" onclick="TTH.openQrEnrollModal()">
+              <span>📱</span> Quét QR Đăng ký
+            </button>
+            <button class="btn btn-primary" onclick="TTH.openAddDeviceModal()">
+              <span>＋</span> Đăng ký thiết bị mới
+            </button>
+          </div>
+        </div>
+
+        <!-- OS Breakdown Summary Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Thiết bị Android</span>
+              <div class="stat-icon-wrapper stat-icon-success">🤖</div>
+            </div>
+            <div class="stat-value" id="statAndroidCount">142</div>
+            <div class="stat-meta"><span class="trend-neutral">Samsung Knox & Google Managed</span></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Máy tính Windows</span>
+              <div class="stat-icon-wrapper stat-icon-primary">🪟</div>
+            </div>
+            <div class="stat-value" id="statWindowsCount">71</div>
+            <div class="stat-meta"><span class="trend-neutral">Windows 11 / 10 Pro & BitLocker</span></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Apple iOS & macOS</span>
+              <div class="stat-icon-wrapper stat-icon-purple">🍏</div>
+            </div>
+            <div class="stat-value" id="statAppleCount">35</div>
+            <div class="stat-meta"><span class="trend-neutral">Apple Business Manager & FileVault</span></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Bộ lọc hiện tại</span>
+              <div class="stat-icon-wrapper stat-icon-warning">🔍</div>
+            </div>
+            <div class="stat-value" id="deviceFilterCountBadge" style="font-size:24px;">Đang tải...</div>
+            <div class="stat-meta"><span class="trend-neutral">Thiết bị đang hiển thị</span></div>
+          </div>
+        </div>
+
+        <!-- Bulk Action Toolbar -->
+        <div id="bulkActionsBar" style="display:none; background:var(--primary-subtle); border:1px solid var(--primary-border); border-radius:var(--radius-md); padding:12px 20px; margin-bottom:16px; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span style="font-weight:700; color:var(--primary);" id="bulkSelectedCount">0 thiết bị được chọn</span>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-secondary btn-sm" id="bulkExportBtn">Xuất CSV mục đã chọn</button>
+            <button class="btn btn-danger btn-sm" id="bulkLockBtn">🔒 Khóa từ xa các máy đã chọn</button>
+          </div>
+        </div>
+
+        <!-- Comprehensive Devices Table Card -->
+        <div class="card table-card">
+          <div class="table-toolbar">
+            <div class="table-tools-left">
+              <div class="search-input-wrapper">
+                <span class="search-input-icon">🔍</span>
+                <input class="form-control" id="deviceSearchInput" placeholder="Tìm theo tên máy, Asset Tag, người dùng, IP...">
+              </div>
+
+              <select class="select-control" id="deviceOsFilter">
+                <option value="all">Mọi hệ điều hành</option>
+                <option value="Windows">Windows</option>
+                <option value="macOS">macOS</option>
+                <option value="iOS">iOS (iPhone/iPad)</option>
+                <option value="Android">Android</option>
+              </select>
+
+              <select class="select-control" id="deviceStatusFilter">
+                <option value="all">Mọi trạng thái</option>
+                <option value="online">Trực tuyến</option>
+                <option value="warning">Cảnh báo vi phạm</option>
+                <option value="offline">Ngoại tuyến</option>
+                <option value="locked">Đã khóa từ xa</option>
+              </select>
+
+              <select class="select-control" id="deviceDeptFilter">
+                <option value="all">Tất cả phòng ban</option>
+                <option value="R&D">Phát triển sản phẩm (R&D)</option>
+                <option value="Tài chính">Tài chính - Kế toán</option>
+                <option value="Kinh doanh">Kinh doanh & Đối tác</option>
+                <option value="Ban Giám Đốc">Ban Giám Đốc</option>
+                <option value="SOC">An ninh thông tin (SOC)</option>
+                <option value="Nhân sự">Hành chính Nhân sự</option>
+              </select>
+            </div>
+
+            <div class="table-tools-right">
+              <button class="btn btn-secondary btn-sm" onclick="TTH.navigateTo('security')">
+                🛡️ Xem chính sách áp dụng
+              </button>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:40px;">
+                    <input type="checkbox" id="selectAllDevices" title="Chọn tất cả">
+                  </th>
+                  <th>Thiết bị & Mã Asset</th>
+                  <th>Người dùng & Phòng ban</th>
+                  <th>Hệ điều hành</th>
+                  <th>Trạng thái</th>
+                  <th>Dung lượng Pin</th>
+                  <th>Đồng bộ gần nhất</th>
+                  <th>Hành động</th>
+                </tr>
+              </thead>
+              <tbody id="deviceListRows">
+                <!-- Dynamically Rendered -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="table-pagination">
+            <span>Hiển thị danh sách thiết bị doanh nghiệp được quản lý tập trung</span>
+            <div class="pagination-controls">
+              <button class="page-btn active">1</button>
+              <button class="page-btn">2</button>
+              <button class="page-btn">3</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           ADMIN VIEW 3: BẢO MẬT & CHÍNH SÁCH (ZERO-TRUST SECURITY)
+           ===================================================================== -->
+      <section class="page-view" id="view-security">
+        <div class="view-header">
+          <div>
+            <div class="view-meta">
+              <span class="view-badge">Zero-Trust Framework</span>
+              <span>ISO 27001 & NIST Compliance</span>
+            </div>
+            <h1>Bảo mật & Chính sách Zero-Trust</h1>
+            <p>Định cấu hình các rào chắn kỹ thuật số, bắt buộc mã hóa phần cứng và kiểm soát hành vi trên tất cả thiết bị đầu cuối.</p>
+          </div>
+
+          <div class="header-action-group">
+            <button class="btn btn-secondary" onclick="TTH.exportCsv('security')">
+              <span>📥</span> Xuất chính sách CSV
+            </button>
+            <button class="btn btn-primary" onclick="alert('Đã đồng bộ và áp dụng toàn bộ 8 chính sách tới tất cả thiết bị đang trực tuyến qua MDM APNs/Knox Gateway!')">
+              <span>⚡</span> Áp dụng ngay toàn hệ thống
+            </button>
+          </div>
+        </div>
+
+        <!-- Security Compliance Score Card -->
+        <div class="card" style="margin-bottom:24px; padding:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;">
+            <div>
+              <span style="font-size:12px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Điểm tuân thủ an ninh tổng thể</span>
+              <div style="display:flex; align-items:baseline; gap:12px; margin-top:6px;">
+                <span style="font-size:42px; font-weight:800; font-family:var(--font-heading); color:var(--primary);" id="securityScoreDisplay">75/100</span>
+                <span class="status-pill status-online" style="font-size:13px;">Mức độ bảo vệ: Rất cao</span>
+              </div>
+              <p style="font-size:13px; margin-top:4px;" id="securityActivePoliciesText">6 / 8 chính sách đang kích hoạt trên toàn bộ workspace.</p>
+            </div>
+
+            <div style="min-width:240px; text-align:right;">
+              <div class="health-progress-track" style="height:10px; width:220px; margin-left:auto;">
+                <div class="health-progress-fill" id="securityScoreProgress" style="width:75%; background:var(--brand-gradient);"></div>
+              </div>
+              <small style="display:block; margin-top:8px; color:var(--text-muted); font-size:11px;">Mục tiêu bảo mật: Duy trì trên 90%</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Policies List -->
+        <div class="card" style="padding:24px; margin-bottom:24px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+            <div>
+              <h3 style="font-size:16px; font-weight:800;">Danh mục chính sách áp dụng</h3>
+              <p style="font-size:12px;">Bật/tắt công tắc để kích hoạt hoặc tạm dừng chính sách ngay tức thì</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="TTH.resetFactoryData()">Khôi phục mặc định</button>
+          </div>
+
+          <div class="policy-card-list" id="policyListContainer">
+            <!-- Dynamically Rendered -->
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           ADMIN VIEW 4: QUẢN LÝ NGƯỜI DÙNG & PHÂN QUYỀN (RBAC) - NEW
+           ===================================================================== -->
+      <section class="page-view" id="view-admin-users">
+        <div class="view-header">
+          <div>
+            <div class="view-meta">
+              <span class="view-badge">Access Control</span>
+              <span>Identity & Role-Based Access</span>
+            </div>
+            <h1>Quản trị Người Dùng & Phân Quyền (RBAC)</h1>
+            <p>Kiểm soát danh tính nhân viên, thiết lập quyền hạn (Super Admin, IT Manager, User) và bắt buộc xác thực đa yếu tố (MFA).</p>
+          </div>
+
+          <div class="header-action-group">
+            <button class="btn btn-secondary" onclick="alert('Đã gửi thông báo yêu cầu kích hoạt 2FA tới toàn bộ nhân viên chưa bật!')">
+              <span>🔐</span> Bắt buộc kích hoạt 2FA
+            </button>
+            <button class="btn btn-primary" onclick="document.getElementById('addAdminUserModal').classList.add('open')">
+              <span>＋</span> Thêm tài khoản người dùng
+            </button>
+          </div>
+        </div>
+
+        <div class="card table-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3>Danh sách người dùng & Quyền truy cập</h3>
+              <p>Phân quyền quản trị hệ thống và gán thiết bị theo từng nhân sự</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Họ và tên & Email</th>
+                  <th>Phòng ban</th>
+                  <th>Vai trò phân quyền</th>
+                  <th>Thiết bị sở hữu</th>
+                  <th>Bảo mật 2FA</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="adminUsersTableRows">
+                <!-- Dynamically Rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           ADMIN VIEW 5: GIÁM SÁT HẠ TẦNG & CỔNG ĐẨY APNS/FCM - NEW
+           ===================================================================== -->
+      <section class="page-view" id="view-admin-telemetry">
+        <div class="view-header">
+          <div>
+            <div class="view-meta">
+              <span class="view-badge">System Infrastructure</span>
+              <span>Cluster Health 99.98% SLA</span>
+            </div>
+            <h1>Giám sát Hạ Tầng & Cổng Đẩy APNs / FCM</h1>
+            <p>Theo dõi thời gian thực tải CPU, RAM, độ trễ cơ sở dữ liệu và tình trạng cổng gửi lệnh điều khiển thiết bị của Apple, Google, Microsoft.</p>
+          </div>
+
+          <div class="header-action-group">
+            <button class="btn btn-secondary" onclick="TTH.toggleMaintenanceMode()">
+              <span>⚙️</span> Bật/Tắt Chế độ bảo trì
+            </button>
+            <button class="btn btn-primary" onclick="alert('Kiểm tra cổng kết nối APNs / FCM hoàn tất: Tất cả 3 cổng đều phản hồi dưới 20ms.')">
+              <span>⚡</span> Kiểm tra kết nối Gateway
+            </button>
+          </div>
+        </div>
+
+        <!-- Telemetry Metrics Grid -->
+        <div class="telemetry-grid">
+          <div class="telemetry-card">
+            <div class="telemetry-header">
+              <span>Mức tải CPU Server</span>
+              <span style="color:var(--success);">Bình thường</span>
+            </div>
+            <div class="telemetry-val" id="telemCpu" style="color:var(--primary);">24.2%</div>
+            <div class="health-progress-track">
+              <div class="health-progress-fill" style="width:24.2%; background:var(--primary);"></div>
+            </div>
+          </div>
+
+          <div class="telemetry-card">
+            <div class="telemetry-header">
+              <span>Bộ nhớ RAM máy chủ</span>
+              <span style="color:var(--success);">Khỏe mạnh</span>
+            </div>
+            <div class="telemetry-val" id="telemRam" style="font-size:18px;">6.4 GB / 16 GB</div>
+            <div class="health-progress-track">
+              <div class="health-progress-fill" style="width:40%; background:var(--success);"></div>
+            </div>
+          </div>
+
+          <div class="telemetry-card">
+            <div class="telemetry-header">
+              <span>Độ trễ DB PostgreSQL</span>
+              <span style="color:var(--success);">Tối ưu</span>
+            </div>
+            <div class="telemetry-val" id="telemLatency" style="color:var(--success);">2.1 ms</div>
+            <div class="health-progress-track">
+              <div class="health-progress-fill" style="width:15%; background:var(--success);"></div>
+            </div>
+          </div>
+
+          <div class="telemetry-card">
+            <div class="telemetry-header">
+              <span>Chứng chỉ SSL / MDM APNs</span>
+              <span style="color:var(--primary);">Còn hiệu lực</span>
+            </div>
+            <div class="telemetry-val" id="telemCertDays">364 ngày</div>
+            <div class="health-progress-track">
+              <div class="health-progress-fill" style="width:90%; background:var(--purple);"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gateway Status Cards -->
+        <div class="card" style="padding:24px; margin-bottom:24px;">
+          <h3 style="font-size:16px; font-weight:800; margin-bottom:14px;">Trạng thái các Cổng Đẩy Lệnh MDM (Push Gateways)</h3>
+          
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:16px; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md);">
+              <div style="display:flex; align-items:center; gap:14px;">
+                <span style="font-size:26px;">🍏</span>
+                <div>
+                  <b style="font-size:14px;">Apple Push Notification Service (APNs) Gateway</b>
+                  <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Kênh điều khiển máy Mac, iPhone, iPad qua cổng chứng chỉ Apple Enterprise.</p>
+                </div>
+              </div>
+              <span class="status-pill status-online">Trực tuyến · 18ms</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:16px; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md);">
+              <div style="display:flex; align-items:center; gap:14px;">
+                <span style="font-size:26px;">🤖</span>
+                <div>
+                  <b style="font-size:14px;">Google Firebase Cloud Messaging (FCM) & Samsung Knox</b>
+                  <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Kênh gửi lệnh tới các thiết bị Android Enterprise và Knox Workspace container.</p>
+                </div>
+              </div>
+              <span class="status-pill status-online">Trực tuyến · 22ms</span>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:16px; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md);">
+              <div style="display:flex; align-items:center; gap:14px;">
+                <span style="font-size:26px;">🪟</span>
+                <div>
+                  <b style="font-size:14px;">Windows Push Notification Services (WNS) & Intune Sync</b>
+                  <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Kênh đồng bộ chính sách mã hóa BitLocker và khóa màn hình máy trạm Windows.</p>
+                </div>
+              </div>
+              <span class="status-pill status-online">Trực tuyến · 15ms</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           ADMIN VIEW 6: BÁO CÁO & PHÂN TÍCH (REPORTS)
+           ===================================================================== -->
+      <section class="page-view" id="view-reports">
+        <div class="view-header">
+          <div>
+            <div class="view-meta">
+              <span class="view-badge">Insights & Analytics</span>
+              <span>Dữ liệu thời gian thực</span>
+            </div>
+            <h1>Báo cáo & Phân tích chuyên sâu</h1>
+            <p>Trích xuất số liệu tồn kho, tỷ lệ tuân thủ, chu kỳ bảo trì phần cứng và xuất dữ liệu tương thích Excel / CSV / BI.</p>
+          </div>
+
+          <div class="header-action-group">
+            <button class="btn btn-secondary" onclick="window.print()">
+              <span>🖨️</span> In / Lưu PDF
+            </button>
+            <button class="btn btn-primary" onclick="TTH.exportCsv('devices')">
+              <span>📥</span> Xuất toàn bộ CSV
+            </button>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Tổng quy mô máy</span>
+              <div class="stat-icon-wrapper stat-icon-primary">📊</div>
+            </div>
+            <div class="stat-value" id="repTotalFleet">248</div>
+            <div class="stat-meta"><span class="trend-up">100% tài sản số</span></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Thị phần Windows</span>
+              <div class="stat-icon-wrapper stat-icon-primary">🪟</div>
+            </div>
+            <div class="stat-value" id="repWindowsPct" style="font-size:22px;">28.6%</div>
+            <div class="stat-meta"><span class="trend-neutral">Máy trạm văn phòng</span></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Thị phần macOS</span>
+              <div class="stat-icon-wrapper stat-icon-purple">🍏</div>
+            </div>
+            <div class="stat-value" id="repMacPct" style="font-size:22px;">14.1%</div>
+            <div class="stat-meta"><span class="trend-neutral">Đội ngũ kỹ thuật R&D</span></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">Thị phần Di động</span>
+              <div class="stat-icon-wrapper stat-icon-success">📱</div>
+            </div>
+            <div class="stat-value" id="repAndroidPct" style="font-size:22px;">57.3%</div>
+            <div class="stat-meta"><span class="trend-neutral">Nhân viên thị trường</span></div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:24px; margin-bottom:24px;">
+          <h3 style="font-size:16px; font-weight:800; margin-bottom:4px;">Báo cáo định kỳ có sẵn để trích xuất</h3>
+          <p style="font-size:12px; margin-bottom:18px;">Chọn loại báo cáo cần kết xuất dữ liệu mẫu hoặc phân tích kế toán</p>
+
+          <div style="display:flex; flex-direction:column; gap:12px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:16px; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md);">
+              <div style="display:flex; align-items:center; gap:14px;">
+                <span style="font-size:26px;">📁</span>
+                <div>
+                  <b style="font-size:14px;">Báo cáo danh mục tài sản phần cứng thiết bị (Device Inventory)</b>
+                  <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Bao gồm: Tên thiết bị, Serial, MAC, IP, CPU, RAM, Ổ cứng, Trạng thái PIN và Ngày bàn giao.</p>
+                </div>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="TTH.exportCsv('devices')">Tải CSV ⇩</button>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:16px; background:var(--bg-card-subtle); border:1px solid var(--border-color); border-radius:var(--radius-md);">
+              <div style="display:flex; align-items:center; gap:14px;">
+                <span style="font-size:26px;">🛡️</span>
+                <div>
+                  <b style="font-size:14px;">Báo cáo mức độ tuân thủ chính sách an toàn thông tin (Security Compliance)</b>
+                  <p style="font-size:12px; color:var(--text-muted); margin-top:2px;">Đánh giá trạng thái BitLocker, FileVault, Passcode, Antivirus và danh sách thiết bị vi phạm.</p>
+                </div>
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="TTH.exportCsv('security')">Tải CSV ⇩</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           ADMIN VIEW 7: GÓI DỊCH VỤ & THANH TOÁN (BILLING)
+           ===================================================================== -->
+      <section class="page-view" id="view-billing">
+        <div class="view-header">
+          <div>
+            <div class="view-meta">
+              <span class="view-badge">Subscription & Invoices</span>
+              <span>Quản lý thanh toán</span>
+            </div>
+            <h1>Gói dịch vụ & Lịch sử thanh toán</h1>
+            <p>Lựa chọn quy mô gói bản quyền quản lý thiết bị, gia hạn thuê bao và tải hóa đơn điện tử VAT.</p>
+          </div>
+
+          <div class="header-action-group">
+            <button class="btn btn-primary" onclick="TTH.openPaymentModal('Gia hạn Business Plan', '2.490.000 đ')">
+              <span>💳</span> Thanh toán / Gia hạn ngay
+            </button>
+          </div>
+        </div>
+
+        <div class="card" style="padding:28px; margin-bottom:28px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:20px; flex-wrap:wrap;">
+            <div>
+              <span class="status-pill status-online" style="margin-bottom:10px;">GÓI ĐANG KÍCH HOẠT</span>
+              <h2 style="font-size:24px; margin-bottom:4px;">Business Enterprise Plan</h2>
+              <p style="font-size:13px;">Hạn mức: <strong>248 / 500 thiết bị</strong> · Chu kỳ thanh toán hàng tháng · Hạn tiếp theo: <strong>27/11/2026</strong></p>
+            </div>
+
+            <div style="text-align:right;">
+              <div style="font-size:32px; font-weight:800; font-family:var(--font-heading); color:var(--primary);">2.490.000 đ <small style="font-size:13px; color:var(--text-muted); font-weight:500;">/ tháng</small></div>
+              <span style="font-size:11px; color:var(--success); font-weight:700;">Đã thanh toán tự động kỳ này</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pricing-grid">
+          <div class="pricing-card">
+            <h3>Starter</h3>
+            <p>Dành cho doanh nghiệp khởi nghiệp hoặc chi nhánh quy mô nhỏ.</p>
+            <div class="pricing-price-text">490.000 đ <small>/ tháng</small></div>
+            <ul class="pricing-features-list">
+              <li><span class="feature-check">✓</span> Quản lý tối đa 50 thiết bị</li>
+              <li><span class="feature-check">✓</span> Bảng điều khiển giám sát cơ bản</li>
+              <li><span class="feature-check">✓</span> Khóa màn hình từ xa (Remote Lock)</li>
+            </ul>
+            <button class="btn btn-secondary" onclick="TTH.openPaymentModal('Starter Plan', '490.000 đ')">Chọn gói Starter</button>
+          </div>
+
+          <div class="pricing-card featured">
+            <span class="pricing-badge-popular">Gói phổ biến</span>
+            <h3>Business Plan</h3>
+            <p>Giải pháp tối ưu cho doanh nghiệp vừa và lớn cần quản trị Zero-Trust.</p>
+            <div class="pricing-price-text">2.490.000 đ <small>/ tháng</small></div>
+            <ul class="pricing-features-list">
+              <li><span class="feature-check">✓</span> Quản lý lên tới 500 thiết bị</li>
+              <li><span class="feature-check">✓</span> Zero-Trust Security Suite đầy đủ</li>
+              <li><span class="feature-check">✓</span> Xóa dữ liệu an toàn từ xa (Remote Wipe)</li>
+            </ul>
+            <button class="btn btn-primary" onclick="alert('Bạn hiện đang sử dụng gói Business Plan này.')">Đang sử dụng</button>
+          </div>
+
+          <div class="pricing-card">
+            <h3>Custom Enterprise</h3>
+            <p>Dành cho tập đoàn đa quốc gia với yêu cầu hạ tầng On-Premise riêng biệt.</p>
+            <div class="pricing-price-text">Liên hệ <small>/ năm</small></div>
+            <ul class="pricing-features-list">
+              <li><span class="feature-check">✓</span> Không giới hạn số lượng thiết bị</li>
+              <li><span class="feature-check">✓</span> Triển khai Private Cloud hoặc On-Premise</li>
+            </ul>
+            <button class="btn btn-secondary" onclick="alert('Chuyên viên tư vấn Enterprise của TTH Technology sẽ liên hệ với bạn trong 15 phút.')">Yêu cầu báo giá riêng</button>
+          </div>
+        </div>
+
+        <div class="card table-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3>Lịch sử hóa đơn thanh toán</h3>
+              <p>Danh sách các kỳ thanh toán dịch vụ và chứng từ kế toán</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Mã hóa đơn</th>
+                  <th>Ngày phát hành</th>
+                  <th>Dịch vụ</th>
+                  <th>Tổng thanh toán</th>
+                  <th>Phương thức</th>
+                  <th>Trạng thái</th>
+                  <th>Chứng từ</th>
+                </tr>
+              </thead>
+              <tbody id="billingInvoicesRows">
+                <!-- Dynamically Rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           ADMIN VIEW 8: ADMIN CONSOLE & MULTI-TENANT
+           ===================================================================== -->
+      <section class="page-view" id="view-admin">
+        <div class="view-header">
+          <div>
+            <div class="view-meta">
+              <span class="view-badge">Platform Management</span>
+              <span>Root Administrator</span>
+            </div>
+            <h1>Bảng điều khiển Quản trị (Admin Console)</h1>
+            <p>Quản lý các workspace chi nhánh khách hàng, phân quyền vai trò (RBAC) và theo dõi nhật ký kiểm toán hệ thống.</p>
+          </div>
+
+          <div class="header-action-group">
+            <button class="btn btn-secondary" onclick="TTH.resetFactoryData()">
+              <span>🔄</span> Khôi phục dữ liệu gốc
+            </button>
+            <button class="btn btn-primary" onclick="alert('Tính năng tạo chi nhánh mới đã sẵn sàng!')">
+              <span>＋</span> Tạo Workspace mới
+            </button>
+          </div>
+        </div>
+
+        <div class="admin-hero-banner">
+          <div>
+            <h2>Quản trị toàn bộ hạ tầng TTH Technology</h2>
+            <p>Hệ thống hỗ trợ phân vùng dữ liệu đa người thuê (Multi-Tenant Isolation), mã hóa secrets và kiểm soát truy cập nghiêm ngặt.</p>
+          </div>
+          <span style="background:rgba(255,255,255,0.15); padding:8px 14px; border-radius:var(--radius-md); font-weight:700; font-size:12px;">
+            Hệ thống: Khỏe mạnh 100%
+          </span>
+        </div>
+
+        <div class="card table-card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3>Các chi nhánh & Không gian làm việc (Workspaces)</h3>
+              <p>Quản lý các pháp nhân và cơ sở dữ liệu độc lập</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Tên Workspace & Địa chỉ</th>
+                  <th>Số thiết bị</th>
+                  <th>Gói dịch vụ</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="adminWorkspaceRows">
+                <!-- Dynamically Rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card table-card" style="margin-top:24px;">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3>Nhật ký kiểm toán an ninh (Audit Trail)</h3>
+              <p>Theo dõi mọi thao tác thay đổi cấu hình, can thiệp thiết bị và phân quyền quản trị</p>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="TTH.exportCsv('audit')">Xuất Log CSV</button>
+          </div>
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Người thực hiện</th>
+                  <th>Hành vi / Thao tác</th>
+                  <th>Địa chỉ IP</th>
+                  <th>Thời gian</th>
+                  <th>Mức độ</th>
+                </tr>
+              </thead>
+              <tbody id="auditLogTableRows">
+                <!-- Dynamically Rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           SHARED VIEW: TRUNG TÂM HỖ TRỢ & TICKET DESK (SUPPORT)
+           ===================================================================== -->
+      <section class="page-view" id="view-support">
+        <div class="view-header">
+          <div>
+            <div class="view-meta">
+              <span class="view-badge">Help Desk 24/7</span>
+              <span>Đội ngũ kỹ thuật TTH</span>
+            </div>
+            <h1>Trung tâm hỗ trợ & Ticket Desk</h1>
+            <p>Gửi yêu cầu trợ giúp kỹ thuật MDM, trao đổi trực tiếp với quản trị viên và tra cứu sổ tay hướng dẫn.</p>
+          </div>
+
+          <div class="header-action-group">
+            <button class="btn btn-primary" onclick="document.getElementById('newTicketModal').classList.add('open')">
+              <span>＋</span> Tạo yêu cầu hỗ trợ mới
+            </button>
+          </div>
+        </div>
+
+        <div class="support-layout" style="margin-bottom:28px;">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3>Danh sách yêu cầu hỗ trợ (Tickets)</h3>
+                <p>Nhấp vào một yêu cầu để xem chuỗi trao đổi</p>
+              </div>
+            </div>
+            <div id="supportTicketsList">
+              <!-- Dynamically Rendered -->
+            </div>
+          </div>
+
+          <div class="card" id="ticketThreadBox" style="display:flex; flex-direction:column;">
+            <div class="card-header">
+              <div>
+                <h3 id="threadTicketTitle" style="font-size:14px;">Chọn một yêu cầu</h3>
+                <p id="threadTicketAuthor" style="font-size:11px;">Chi tiết trao đổi</p>
+              </div>
+            </div>
+            
+            <div class="card-body" style="flex:1; display:flex; flex-direction:column;">
+              <div id="threadMessageList" style="flex:1; max-height:360px; overflow-y:auto; margin-bottom:16px;">
+                <!-- Messages -->
+              </div>
+
+              <div style="display:flex; gap:10px;">
+                <input class="form-control" id="ticketReplyInput" placeholder="Nhập câu trả lời hoặc hỗ trợ người dùng..." style="flex:1;">
+                <button class="btn btn-primary btn-sm" id="sendTicketReplyBtn">Gửi</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           USER VIEW 1: THIẾT BỊ CỦA TÔI (MY DEVICES) - USER PORTAL
+           ===================================================================== -->
+      <section class="page-view" id="view-user-devices">
+        <div class="view-header">
+          <div>
+            <div class="view-meta">
+              <span class="view-badge" style="background:var(--success-bg); color:var(--success);">Cổng Thông Tin Nhân Viên</span>
+              <span>Nhân sự: <strong>Nguyễn Minh Anh</strong> (R&D)</span>
+            </div>
+            <h1>Thiết Bị Của Tôi (My Assigned Devices)</h1>
+            <p>Danh sách các thiết bị làm việc được công ty cấp phát cho bạn. Bạn có thể kiểm tra sức khỏe máy, định vị, hoặc khóa máy khẩn cấp.</p>
+          </div>
+
+          <div class="header-action-group">
+            <button class="btn btn-secondary" onclick="TTH.setRole('admin')">
+              <span>👑</span> Quay lại Quyền Quản Trị (Admin Mode)
+            </button>
+            <button class="btn btn-primary" onclick="TTH.navigateTo('user-requests')">
+              <span>＋</span> Yêu cầu thêm thiết bị
+            </button>
+          </div>
+        </div>
+
+        <div class="user-hero-banner">
+          <div>
+            <h2>Xin chào, Nguyễn Minh Anh! 👋</h2>
+            <p>Bạn hiện đang sở hữu 2 thiết bị làm việc an toàn. Cả 2 máy đều đạt chứng chỉ bảo mật Zero-Trust và đang được kết nối với mạng nội bộ TTH.</p>
+          </div>
+          <button class="btn btn-secondary" style="background:#fff; color:#065f46; font-weight:700;" onclick="TTH.navigateTo('user-apps')">
+            Mở Kho ứng dụng ↗
+          </button>
+        </div>
+
+        <!-- My Assigned Devices Cards Grid -->
+        <div class="my-devices-grid" id="myDevicesContainer">
+          <!-- Dynamically Rendered -->
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           USER VIEW 2: CỬA HÀNG ỨNG DỤNG NỘI BỘ (ENTERPRISE APP CATALOG)
+           ===================================================================== -->
+      <section class="page-view" id="view-user-apps">
+        <div class="view-header">
+          <div>
+            <div class="view-meta">
+              <span class="view-badge">Self-Service App Store</span>
+              <span>Ứng dụng doanh nghiệp đã được phê duyệt</span>
+            </div>
+            <h1>Cửa Hàng Ứng Dụng Nội Bộ (App Catalog)</h1>
+            <p>Tự do cài đặt các phần mềm làm việc, công cụ phát triển và bộ giải pháp văn phòng được cấp phép chính thức bởi TTH Technology.</p>
+          </div>
+
+          <div class="header-action-group">
+            <button class="btn btn-secondary" onclick="alert('Kho ứng dụng đã được đồng bộ với phiên bản mới nhất từ Enterprise App Repository.')">
+              <span>🔄</span> Làm mới danh mục
+            </button>
+          </div>
+        </div>
+
+        <!-- Catalog Grid -->
+        <div class="app-catalog-grid" id="appCatalogGrid">
+          <!-- Dynamically Rendered -->
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           USER VIEW 3: YÊU CẦU CẤP PHÁT THIẾT BỊ (HARDWARE REQUESTS)
+           ===================================================================== -->
+      <section class="page-view" id="view-user-requests">
+        <div class="view-header">
+          <div>
+            <div class="view-meta">
+              <span class="view-badge">Asset Procurement</span>
+              <span>Quy trình phê duyệt tự động</span>
+            </div>
+            <h1>Yêu Cầu Cấp Phát Thiết Bị & Phần Cứng</h1>
+            <p>Gửi yêu cầu nâng cấp laptop, cấp thêm màn hình 4K, chuột công thái học hoặc phụ kiện làm việc phục vụ dự án.</p>
+          </div>
+
+          <div class="header-action-group">
+            <button class="btn btn-primary" onclick="document.getElementById('hardwareRequestModal').classList.add('open')">
+              <span>＋</span> Gửi yêu cầu thiết bị mới
+            </button>
+          </div>
+        </div>
+
+        <div id="hardwareRequestsContainer">
+          <!-- Dynamically Rendered Requests with Steppers -->
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           USER VIEW 4: BÁO MẤT & KHẨN CẤP (EMERGENCY LOST MODE)
+           ===================================================================== -->
+      <section class="page-view" id="view-user-emergency">
+        <div class="view-header">
+          <div>
+            <div class="view-meta">
+              <span class="view-badge" style="background:var(--danger-bg); color:var(--danger);">SOS Security Zone</span>
+              <span>Phòng ngừa rò rỉ dữ liệu</span>
+            </div>
+            <h1>Báo Mất Thiết Bị & Hành Động Khẩn Cấp</h1>
+            <p>Nếu bạn bị rơi máy tính, bỏ quên điện thoại trên taxi hoặc nghi ngờ bị đánh cắp, hãy kích hoạt khóa máy ngay lập tức.</p>
+          </div>
+        </div>
+
+        <div class="card" style="padding:28px; border:2px solid var(--danger); margin-bottom:24px;">
+          <div style="display:flex; align-items:flex-start; gap:20px;">
+            <div style="font-size:42px;">🚨</div>
+            <div style="flex:1">
+              <h2 style="font-size:20px; color:var(--danger); margin-bottom:6px;">Quy Trình Khẩn Cấp Khi Thất Lạc Thiết Bị</h2>
+              <p style="font-size:13px; line-height:1.6; margin-bottom:16px;">
+                Khi bạn bấm khóa máy khẩn cấp, hệ thống MDM sẽ ngắt toàn bộ phiên làm việc Slack, Email, Google Workspace và khóa màn hình máy bằng mã bảo vệ an toàn. Tọa độ GPS sẽ tự động được gửi về Trung tâm vận hành an ninh (SOC) 24/7.
+              </p>
+              
+              <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                <button class="btn btn-danger" onclick="TTH.emergencyLockDevice('TTH-MAC-0021')">
+                  🔒 Khóa khẩn cấp MacBook Pro 14" (TTH-MAC-0021)
+                </button>
+                <button class="btn btn-danger" onclick="TTH.emergencyLockDevice('TTH-AND-0184')">
+                  🔒 Khóa khẩn cấp Galaxy S24 Ultra (TTH-AND-0184)
+                </button>
+                <button class="btn btn-secondary" onclick="alert('Đã kết nối đường dây nóng SOC: 1900 8899 (Phím 1) - Kỹ thuật viên bảo mật đang trực tuyến!')">
+                  📞 Gọi Hotline An Ninh Khẩn Cấp
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="padding:24px;">
+          <h3 style="font-size:15px; font-weight:800; margin-bottom:12px;">Các Bước Khuyến Nghị Khi Mất Máy:</h3>
+          <ol style="padding-left:20px; font-size:13px; color:var(--text-muted); line-height:1.8;">
+            <li>Bấm nút <strong>Khóa khẩn cấp</strong> ở phía trên để bảo vệ dữ liệu công ty ngay tức khắc.</li>
+            <li>Thông báo ngay cho Trưởng phòng dự án và quản trị viên IT qua số Hotline hoặc Zalo.</li>
+            <li>Đổi mật khẩu tài khoản Google Workspace và mật khẩu cổng SSO công ty từ thiết bị phụ.</li>
+            <li>Đến công an khu vực trình báo nếu thiết bị bị cướp giật hoặc mất cắp tài sản.</li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- =====================================================================
+           USER VIEW 5: SỔ TAY IT & HƯỚNG DẪN KỸ THUẬT (HANDBOOK)
+           ===================================================================== -->
+      <section class="page-view" id="view-user-handbook">
+        <div class="view-header">
+          <div>
+            <div class="view-meta">
+              <span class="view-badge">Knowledge Base</span>
+              <span>Tài liệu tự phục vụ</span>
+            </div>
+            <h1>Sổ Tay IT & Hướng Dẫn Kỹ Thuật</h1>
+            <p>Hướng dẫn cấu hình mạng WiFi văn phòng, cài đặt phần mềm VPN làm việc từ xa và xử lý sự cố thiết bị thường gặp.</p>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:20px;">
+          <div class="card" style="padding:24px;">
+            <div style="font-size:32px; margin-bottom:10px;">📶</div>
+            <h3 style="font-size:16px; font-weight:800; margin-bottom:6px;">Kết nối mạng WiFi văn phòng</h3>
+            <p style="font-size:12px; margin-bottom:14px;">Mạng WiFi doanh nghiệp sử dụng chuẩn WPA3 Enterprise an toàn cao.</p>
+            <div style="background:var(--bg-card-subtle); padding:12px; border-radius:var(--radius-md); font-size:12px; line-height:1.6; margin-bottom:14px;">
+              <div>SSID: <strong>TTH-Corporate-5G</strong></div>
+              <div>Xác thực: <strong>EAP-TLS (Chứng chỉ số tự động)</strong></div>
+              <div>Mạng khách: <strong>TTH-Guest</strong> (Mật khẩu: <code>TTH@Tech2026</code>)</div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="TTH.downloadWifiProfile('ALL')">Tải profile tự cấu hình ⇩</button>
+          </div>
+
+          <div class="card" style="padding:24px;">
+            <div style="font-size:32px; margin-bottom:10px;">🛡️</div>
+            <h3 style="font-size:16px; font-weight:800; margin-bottom:6px;">Kết nối VPN làm việc từ xa (WFH)</h3>
+            <p style="font-size:12px; margin-bottom:14px;">Truy cập máy chủ nội bộ, GitLab và kho tài liệu kế toán khi ở nhà.</p>
+            <div style="background:var(--bg-card-subtle); padding:12px; border-radius:var(--radius-md); font-size:12px; line-height:1.6; margin-bottom:14px;">
+              <div>Phần mềm: <strong>TTH Secure Global VPN</strong></div>
+              <div>Giao thức: <strong>WireGuard UDP / Port 51820</strong></div>
+              <div>Địa chỉ Gateway: <code>vpn.tth.vn</code></div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="alert('Đã sao chép cấu hình WireGuard Config vào Clipboard!')">Sao chép cấu hình VPN</button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL: YÊU CẦU CẤP PHÁT THIẾT BỊ PHẦN CỨNG MỚI (USER)
+     ========================================================================= -->
+<div class="modal-overlay" id="hardwareRequestModal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3>Gửi yêu cầu cấp phát thiết bị phần cứng</h3>
+      <button class="modal-close-btn" data-close-modal>✕</button>
+    </div>
+    <form id="hardwareRequestForm">
+      <div class="modal-body">
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Loại thiết bị / Phụ kiện cần cấp *</label>
+            <select class="select-control" id="hwItemSelect" style="width:100%;">
+              <option value="Màn hình Dell UltraSharp 27 inch 4K">Màn hình Dell UltraSharp 27" 4K (Thiết kế / Lập trình)</option>
+              <option value="Bàn phím cơ không dây Keychron K8 Pro">Bàn phím cơ không dây Keychron K8 Pro</option>
+              <option value="Chuột công thái học Logitech MX Master 3S">Chuột công thái học Logitech MX Master 3S</option>
+              <option value="Nâng cấp RAM laptop lên 32GB DDR5">Nâng cấp RAM laptop lên 32GB DDR5</option>
+              <option value="Cấp mới Laptop MacBook Pro 16 inch M3 Max">Cấp mới Laptop MacBook Pro 16" M3 Max</option>
+              <option value="Tai nghe chống ồn Sony WH-1000XM5">Tai nghe chống ồn Sony WH-1000XM5 (Họp trực tuyến)</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Nhóm danh mục</label>
+            <select class="select-control" id="hwItemCategory" style="width:100%;">
+              <option value="Màn hình ngoài">Màn hình ngoài</option>
+              <option value="Phụ kiện ngoại vi">Phụ kiện ngoại vi</option>
+              <option value="Nâng cấp phần cứng">Nâng cấp phần cứng</option>
+              <option value="Máy tính mới">Máy tính mới</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Lý do đề xuất & Dự án sử dụng *</label>
+            <textarea class="form-control" id="hwItemReason" rows="3" required placeholder="Nêu rõ lý do cần thiết bị cho công việc hoặc dự án..." style="width:100%;"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal>Hủy</button>
+        <button type="submit" class="btn btn-primary">Gửi phê duyệt</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL: THÊM NGƯỜI DÙNG & PHÂN QUYỀN RBAC (ADMIN)
+     ========================================================================= -->
+<div class="modal-overlay" id="addAdminUserModal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3>Thêm tài khoản người dùng & Phân quyền RBAC</h3>
+      <button class="modal-close-btn" data-close-modal>✕</button>
+    </div>
+    <form id="addAdminUserForm">
+      <div class="modal-body">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div style="grid-column:1 / -1;">
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Họ và tên nhân viên *</label>
+            <input class="form-control" id="newUserName" required placeholder="VD: Trần Đình Khang" style="width:100%;">
+          </div>
+
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Email công ty *</label>
+            <input class="form-control" id="newUserEmail" type="email" required placeholder="khang.tran@tth.vn" style="width:100%;">
+          </div>
+
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Phòng ban</label>
+            <select class="select-control" id="newUserDept" style="width:100%;">
+              <option value="Phát triển sản phẩm (R&D)">Phát triển sản phẩm (R&D)</option>
+              <option value="Tài chính - Kế toán">Tài chính - Kế toán</option>
+              <option value="Kinh doanh & Đối tác">Kinh doanh & Đối tác</option>
+              <option value="An ninh thông tin (SOC)">An ninh thông tin (SOC)</option>
+              <option value="Hành chính Nhân sự">Hành chính Nhân sự</option>
+              <option value="Ban Giám Đốc">Ban Giám Đốc</option>
+            </select>
+          </div>
+
+          <div style="grid-column:1 / -1;">
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Vai trò phân quyền (Role) *</label>
+            <select class="select-control" id="newUserRole" style="width:100%;">
+              <option value="Nhân viên (User)">Nhân viên (User) — Chỉ truy cập Cổng nhân viên tự phục vụ</option>
+              <option value="IT Manager">IT Manager — Quản lý danh mục thiết bị, hỗ trợ kỹ thuật</option>
+              <option value="Super Admin">Super Admin — Toàn quyền cấu hình chính sách và xóa máy</option>
+              <option value="Ban Giám Đốc (Auditor)">Ban Giám Đốc (Auditor) — Xem báo cáo và kiểm toán</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal>Hủy</button>
+        <button type="submit" class="btn btn-primary">Tạo tài khoản</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL: ĐĂNG KÝ THIẾT BỊ MỚI (ADMIN)
+     ========================================================================= -->
+<div class="modal-overlay" id="addDeviceModal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3>Đăng ký thiết bị mới vào hệ thống</h3>
+      <button class="modal-close-btn" data-close-modal>✕</button>
+    </div>
+    <form id="addDeviceForm">
+      <div class="modal-body">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div style="grid-column: 1 / -1;">
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Tên thiết bị *</label>
+            <input class="form-control" id="newDevName" required placeholder="VD: Laptop Dell Latitude Kế toán hoặc MacBook R&D" style="width:100%;">
+          </div>
+
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Mã định danh Asset ID *</label>
+            <input class="form-control" id="newDevId" required placeholder="VD: TTH-DEV-0249" style="width:100%;">
+          </div>
+
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Hệ điều hành</label>
+            <select class="select-control" id="newDevOs" style="width:100%;">
+              <option value="Windows 11 Pro">Windows 11 Pro 64-bit</option>
+              <option value="macOS Sonoma">macOS Sonoma (Apple Silicon)</option>
+              <option value="Android 15">Android 15 (Samsung / Pixel)</option>
+              <option value="iOS 18">iOS 18 (Apple iPhone / iPad)</option>
+              <option value="Windows 10 Pro">Windows 10 Pro</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Họ tên nhân viên sở hữu *</label>
+            <input class="form-control" id="newDevUser" required placeholder="VD: Nguyễn Văn An" style="width:100%;">
+          </div>
+
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Email công ty</label>
+            <input class="form-control" id="newDevEmail" type="email" placeholder="VD: an.nguyen@tth.vn" style="width:100%;">
+          </div>
+
+          <div style="grid-column: 1 / -1;">
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Phòng ban trực thuộc</label>
+            <select class="select-control" id="newDevDept" style="width:100%;">
+              <option value="Phát triển sản phẩm (R&D)">Phát triển sản phẩm (R&D)</option>
+              <option value="Tài chính - Kế toán">Tài chính - Kế toán</option>
+              <option value="Kinh doanh & Đối tác">Kinh doanh & Đối tác</option>
+              <option value="Ban Giám Đốc">Ban Giám Đốc</option>
+              <option value="An ninh thông tin (SOC)">An ninh thông tin (SOC)</option>
+              <option value="Hành chính Nhân sự">Hành chính Nhân sự</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal>Hủy bỏ</button>
+        <button type="submit" class="btn btn-primary">Xác nhận thêm thiết bị</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL: SỬA THÔNG TIN THIẾT BỊ (ADMIN)
+     ========================================================================= -->
+<div class="modal-overlay" id="editDeviceModal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3>Chỉnh sửa thông tin thiết bị</h3>
+      <button class="modal-close-btn" data-close-modal>✕</button>
+    </div>
+    <form id="editDeviceForm">
+      <div class="modal-body">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+          <div style="grid-column: 1 / -1;">
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Tên thiết bị</label>
+            <input class="form-control" id="editDevName" required style="width:100%;">
+          </div>
+
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Người sở hữu</label>
+            <input class="form-control" id="editDevUser" required style="width:100%;">
+          </div>
+
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Email</label>
+            <input class="form-control" id="editDevEmail" type="email" style="width:100%;">
+          </div>
+
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Phòng ban</label>
+            <select class="select-control" id="editDevDept" style="width:100%;">
+              <option value="Phát triển sản phẩm (R&D)">Phát triển sản phẩm (R&D)</option>
+              <option value="Tài chính - Kế toán">Tài chính - Kế toán</option>
+              <option value="Kinh doanh & Đối tác">Kinh doanh & Đối tác</option>
+              <option value="Ban Giám Đốc">Ban Giám Đốc</option>
+              <option value="An ninh thông tin (SOC)">An ninh thông tin (SOC)</option>
+              <option value="Hành chính Nhân sự">Hành chính Nhân sự</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Trạng thái hoạt động</label>
+            <select class="select-control" id="editDevStatus" style="width:100%;">
+              <option value="online">Trực tuyến</option>
+              <option value="warning">Cảnh báo</option>
+              <option value="offline">Ngoại tuyến</option>
+              <option value="locked">Đã khóa</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal>Hủy</button>
+        <button type="submit" class="btn btn-primary">Lưu thay đổi</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL: CHI TIẾT THIẾT BỊ & ĐIỀU KHIỂN TỪ XA (5 TABS)
+     ========================================================================= -->
+<div class="modal-overlay" id="deviceDetailModal">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-header">
+      <div>
+        <h3 id="deviceModalTitle">Chi tiết thiết bị</h3>
+        <p id="deviceModalSubtitle" style="font-size:12px; color:var(--text-muted); margin-top:2px;">Thông tin định danh và bảng điều khiển từ xa</p>
+      </div>
+      <button class="modal-close-btn" data-close-modal>✕</button>
+    </div>
+
+    <div class="modal-tabs">
+      <button class="modal-tab-btn active" data-tab="info">Thông số & Phần cứng</button>
+      <button class="modal-tab-btn" data-tab="actions">⚡ Điều khiển từ xa (MDM)</button>
+      <button class="modal-tab-btn" data-tab="apps">Ứng dụng đã cài đặt</button>
+      <button class="modal-tab-btn" data-tab="compliance">Tuân thủ an toàn</button>
+      <button class="modal-tab-btn" data-tab="logs">Nhật ký sự kiện</button>
+    </div>
+
+    <div class="modal-body">
+      <!-- TAB 1: Specs -->
+      <div class="modal-tab-content" id="tabContent-info">
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:16px; margin-bottom:20px;">
+          <div style="background:var(--bg-card-subtle); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+            <small style="color:var(--text-muted); font-size:11px;">Tên máy:</small>
+            <div style="font-weight:700; font-size:14px;" id="detailDevName">-</div>
+          </div>
+          <div style="background:var(--bg-card-subtle); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+            <small style="color:var(--text-muted); font-size:11px;">Mã định danh Asset ID:</small>
+            <div style="font-weight:700; font-size:14px; font-family:monospace;" id="detailDevId">-</div>
+          </div>
+          <div style="background:var(--bg-card-subtle); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+            <small style="color:var(--text-muted); font-size:11px;">Người sở hữu:</small>
+            <div style="font-weight:700; font-size:14px;" id="detailDevUser">-</div>
+          </div>
+          <div style="background:var(--bg-card-subtle); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+            <small style="color:var(--text-muted); font-size:11px;">Phòng ban:</small>
+            <div style="font-weight:700; font-size:14px;" id="detailDevDept">-</div>
+          </div>
+          <div style="background:var(--bg-card-subtle); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+            <small style="color:var(--text-muted); font-size:11px;">Hệ điều hành:</small>
+            <div style="font-weight:700; font-size:14px;" id="detailDevOs">-</div>
+          </div>
+          <div style="background:var(--bg-card-subtle); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+            <small style="color:var(--text-muted); font-size:11px;">Trạng thái:</small>
+            <div id="detailDevStatus">-</div>
+          </div>
+          <div style="background:var(--bg-card-subtle); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+            <small style="color:var(--text-muted); font-size:11px;">Địa chỉ IP nội bộ:</small>
+            <div style="font-weight:700; font-size:14px; font-family:monospace;" id="detailDevIp">-</div>
+          </div>
+          <div style="background:var(--bg-card-subtle); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+            <small style="color:var(--text-muted); font-size:11px;">Địa chỉ MAC:</small>
+            <div style="font-weight:700; font-size:14px; font-family:monospace;" id="detailDevMac">-</div>
+          </div>
+          <div style="background:var(--bg-card-subtle); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+            <small style="color:var(--text-muted); font-size:11px;">Số Serial phần cứng:</small>
+            <div style="font-weight:700; font-size:14px; font-family:monospace;" id="detailDevSerial">-</div>
+          </div>
+          <div style="background:var(--bg-card-subtle); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+            <small style="color:var(--text-muted); font-size:11px;">Bộ vi xử lý (CPU) & RAM:</small>
+            <div style="font-weight:700; font-size:13px;"><span id="detailDevCpu">-</span> · <span id="detailDevRam">-</span></div>
+          </div>
+          <div style="background:var(--bg-card-subtle); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+            <small style="color:var(--text-muted); font-size:11px;">Dung lượng ổ cứng:</small>
+            <div style="font-weight:700; font-size:14px;" id="detailDevStorage">-</div>
+          </div>
+          <div style="background:var(--bg-card-subtle); padding:14px; border-radius:var(--radius-md); border:1px solid var(--border-light);">
+            <small style="color:var(--text-muted); font-size:11px;">Tình trạng Pin & Ngày đăng ký:</small>
+            <div style="font-weight:700; font-size:13px;"><span id="detailDevBattery">-</span> · Kích hoạt: <span id="detailDevEnrollDate">-</span></div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;">
+          <h4 style="font-size:13px; font-weight:700; margin-bottom:8px;">Vị trí địa lý hiện tại (GPS Radar Telemetry)</h4>
+          <div class="gps-map-preview">
+            <div class="gps-radar-dot"></div>
+            <div class="gps-info-chip" id="detailDevLocation">Tòa nhà TTH Tech Hub, Cầu Giấy, Hà Nội</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Actions -->
+      <div class="modal-tab-content" id="tabContent-actions" style="display:none;">
+        <p style="font-size:13px; color:var(--text-muted); margin-bottom:14px;">
+          Các hành động điều khiển từ xa được mã hóa bằng chữ ký số và chuyển trực tiếp tới Agent chạy trên thiết bị:
+        </p>
+
+        <div class="remote-actions-grid">
+          <div class="remote-action-card" id="actionRemoteLock">
+            <div class="action-card-icon">🔒</div>
+            <b>Khóa màn hình từ xa</b>
+            <p>Khóa ngay lập tức, bắt buộc nhập mã PIN quản trị viên</p>
+          </div>
+
+          <div class="remote-action-card" id="actionBroadcastMsg">
+            <div class="action-card-icon">💬</div>
+            <b>Gửi tin nhắn cảnh báo</b>
+            <p>Hiển thị pop-up thông báo toàn màn hình cho nhân viên</p>
+          </div>
+
+          <div class="remote-action-card" id="actionRemoteReboot">
+            <div class="action-card-icon">🔄</div>
+            <b>Khởi động lại máy</b>
+            <p>Khởi động lại hệ điều hành để áp dụng bản vá</p>
+          </div>
+
+          <div class="remote-action-card" id="actionResetPin">
+            <div class="action-card-icon">🔑</div>
+            <b>Cấp lại mã PIN mở khóa</b>
+            <p>Tạo mã PIN mở khóa màn hình tạm thời có thời hạn</p>
+          </div>
+
+          <div class="remote-action-card" id="actionPingGps">
+            <div class="action-card-icon">📍</div>
+            <b>Định vị GPS tức thì</b>
+            <p>Gửi tín hiệu Ping cập nhật tọa độ thời gian thực</p>
+          </div>
+
+          <div class="remote-action-card danger" id="actionRemoteWipe">
+            <div class="action-card-icon" style="color:var(--danger);">⚠️</div>
+            <b style="color:var(--danger);">Xóa sạch dữ liệu (Wipe)</b>
+            <p>Khôi phục cài đặt gốc, xóa vĩnh viễn toàn bộ dữ liệu</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Apps -->
+      <div class="modal-tab-content" id="tabContent-apps" style="display:none;">
+        <h4 style="font-size:14px; font-weight:800; margin-bottom:10px;">Kho phần mềm & Ứng dụng doanh nghiệp</h4>
+        <div id="detailDevApps" style="border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden;"></div>
+      </div>
+
+      <!-- TAB 4: Compliance -->
+      <div class="modal-tab-content" id="tabContent-compliance" style="display:none;">
+        <h4 style="font-size:14px; font-weight:800; margin-bottom:10px;">Bảng kiểm tuân thủ tiêu chuẩn an ninh Zero-Trust</h4>
+        <div id="detailDevCompliance" style="border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden;"></div>
+      </div>
+
+      <!-- TAB 5: Logs -->
+      <div class="modal-tab-content" id="tabContent-logs" style="display:none;">
+        <h4 style="font-size:14px; font-weight:800; margin-bottom:10px;">Lịch sử hoạt động của thiết bị này</h4>
+        <div id="detailDevLogs" style="border:1px solid var(--border-color); border-radius:var(--radius-md); overflow:hidden;"></div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" data-close-modal>Đóng cửa sổ</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL: QR ENROLLMENT
+     ========================================================================= -->
+<div class="modal-overlay" id="qrEnrollModal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3>Mã QR Đăng ký thiết bị di động (Mobile Enrollment)</h3>
+      <button class="modal-close-btn" data-close-modal>✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center;">
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;">
+        Nhân viên sử dụng ứng dụng Máy ảnh (Camera) trên iPhone, iPad hoặc Android để quét mã QR này và kích hoạt hồ sơ quản lý:
+      </p>
+
+      <div class="vietqr-box" style="margin: 0 auto 16px; width:220px;">
+        <svg class="vietqr-svg" viewBox="0 0 100 100">
+          <rect width="100" height="100" fill="#ffffff" />
+          <rect x="5" y="5" width="28" height="28" fill="#0f172a" rx="4" />
+          <rect x="9" y="9" width="20" height="20" fill="#ffffff" rx="2" />
+          <rect x="13" y="13" width="12" height="12" fill="#0f172a" rx="1" />
+          <rect x="67" y="5" width="28" height="28" fill="#0f172a" rx="4" />
+          <rect x="71" y="9" width="20" height="20" fill="#ffffff" rx="2" />
+          <rect x="75" y="13" width="12" height="12" fill="#0f172a" rx="1" />
+          <rect x="5" y="67" width="28" height="28" fill="#0f172a" rx="4" />
+          <rect x="9" y="71" width="20" height="20" fill="#ffffff" rx="2" />
+          <rect x="13" y="75" width="12" height="12" fill="#0f172a" rx="1" />
+          <rect x="42" y="42" width="16" height="16" fill="#3b82f6" rx="3" />
+        </svg>
+      </div>
+
+      <div style="font-size:12px; font-weight:700; color:var(--text-main);">https://enroll.tth.vn/w/vn-hq-2026</div>
+      <p style="font-size:11px; color:var(--text-muted); margin-top:4px;">Mã QR có hiệu lực trong 24 giờ cho nhân viên nội bộ</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="navigator.clipboard?.writeText('https://enroll.tth.vn/w/vn-hq-2026'); alert('Đã sao chép liên kết Enrollment vào bộ nhớ tạm!');">
+        📋 Sao chép liên kết
+      </button>
+      <button class="btn btn-primary" data-close-modal>Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL: VIETQR PAYMENT
+     ========================================================================= -->
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3>Thanh toán trực tuyến qua VietQR</h3>
+      <button class="modal-close-btn" data-close-modal>✕</button>
+    </div>
+    <div class="modal-body" style="text-align:center;">
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:16px;">
+        Mở ứng dụng Ngân hàng (VCB, Techcombank, MB, VPBank...) và quét mã QR chuyển khoản tức thì 24/7:
+      </p>
+
+      <div class="vietqr-box" style="margin: 0 auto 16px; width:240px;">
+        <div style="font-size:12px; font-weight:800; color:#0f172a; margin-bottom:8px;">Vietcombank (VCB)</div>
+        <svg class="vietqr-svg" viewBox="0 0 100 100">
+          <rect width="100" height="100" fill="#ffffff" />
+          <rect x="5" y="5" width="28" height="28" fill="#10b981" rx="4" />
+          <rect x="9" y="9" width="20" height="20" fill="#ffffff" rx="2" />
+          <rect x="13" y="13" width="12" height="12" fill="#10b981" rx="1" />
+          <rect x="67" y="5" width="28" height="28" fill="#10b981" rx="4" />
+          <rect x="71" y="9" width="20" height="20" fill="#ffffff" rx="2" />
+          <rect x="75" y="13" width="12" height="12" fill="#10b981" rx="1" />
+          <rect x="5" y="67" width="28" height="28" fill="#10b981" rx="4" />
+          <rect x="9" y="71" width="20" height="20" fill="#ffffff" rx="2" />
+          <rect x="13" y="75" width="12" height="12" fill="#10b981" rx="1" />
+          <rect x="42" y="42" width="16" height="16" fill="#10b981" rx="3" />
+        </svg>
+        <div style="font-size:13px; font-weight:800; color:#10b981; margin-top:8px;" id="payPlanPrice">2.490.000 đ</div>
+      </div>
+
+      <div style="background:var(--bg-card-subtle); padding:12px; border-radius:var(--radius-md); text-align:left; font-size:12px; line-height:1.6;">
+        <div>Chủ tài khoản: <strong>CÔNG TY CP CÔNG NGHỆ TTH VIỆT NAM</strong></div>
+        <div>Số tài khoản: <strong>998822336688</strong> · VCB Chi nhánh Thăng Long</div>
+        <div>Nội dung chuyển khoản: <strong style="color:var(--primary);" id="payMemoCode">TTH-MDM-882211</strong></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" data-close-modal>Để sau</button>
+      <button class="btn btn-primary" onclick="alert('Hệ thống đã nhận được tín hiệu thanh toán thành công!\nHóa đơn VAT đã được tự động lưu vào mục Hóa đơn.'); document.getElementById('paymentModal').classList.remove('open');">
+        ✓ Tôi đã chuyển khoản xong
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     MODAL: TẠO TICKET HỖ TRỢ
+     ========================================================================= -->
+<div class="modal-overlay" id="newTicketModal">
+  <div class="modal-dialog">
+    <div class="modal-header">
+      <h3>Tạo yêu cầu hỗ trợ kỹ thuật mới</h3>
+      <button class="modal-close-btn" data-close-modal>✕</button>
+    </div>
+    <form id="newTicketForm">
+      <div class="modal-body">
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Tiêu đề vấn đề *</label>
+            <input class="form-control" id="ticketTitleInput" required placeholder="VD: Yêu cầu mở ngoại lệ chính sách hoặc lỗi đồng bộ" style="width:100%;">
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div>
+              <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Mức độ ưu tiên</label>
+              <select class="select-control" id="ticketPrioritySelect" style="width:100%;">
+                <option value="Bình thường">Bình thường</option>
+                <option value="Trung bình">Trung bình</option>
+                <option value="Cao">Cao</option>
+                <option value="Khẩn cấp">Khẩn cấp (Incident)</option>
+              </select>
+            </div>
+            <div>
+              <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Người gửi</label>
+              <input class="form-control" id="ticketAuthorInput" required value="Nguyễn Minh Anh" style="width:100%;">
+            </div>
+          </div>
+
+          <div>
+            <label style="display:block; font-size:12px; font-weight:700; margin-bottom:6px;">Nội dung chi tiết *</label>
+            <textarea class="form-control" id="ticketDescInput" rows="4" required placeholder="Mô tả cụ thể sự cố cần IT hỗ trợ..." style="width:100%;"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal>Hủy</button>
+        <button type="submit" class="btn btn-primary">Gửi yêu cầu hỗ trợ</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- =========================================================================
+     COMMAND PALETTE (CTRL + K)
+     ========================================================================= -->
+<div class="command-palette-backdrop" id="commandPalette">
+  <div class="command-palette-box">
+    <input class="command-palette-input" id="commandPaletteInput" placeholder="Tìm kiếm trang, chuyển đổi Admin/User hoặc thiết bị... (Gõ để tìm)">
+    <div class="command-palette-list" id="commandPaletteList">
+      <!-- Dynamically Rendered -->
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     SLIDE-OUT NOTIFICATION DRAWER
+     ========================================================================= -->
+<div class="notification-drawer" id="notificationDrawer">
+  <div class="drawer-header">
+    <div style="font-weight:800; font-size:15px;">Thông báo & Cảnh báo</div>
+    <button class="topbar-icon-btn" id="closeNotifDrawer" style="width:30px; height:30px;">✕</button>
+  </div>
+  <div class="drawer-body" id="notificationList">
+    <!-- Dynamically Rendered -->
+  </div>
+  <div style="padding:14px; border-top:1px solid var(--border-color); text-align:center;">
+    <button class="btn btn-secondary btn-sm" style="width:100%;" onclick="alert('Đã đánh dấu đã đọc tất cả thông báo!')">Đánh dấu tất cả đã đọc</button>
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION CONTAINER -->
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- Core Engine Script -->
+<script src="js/app.js"></script>
+
+</body>
+</html>

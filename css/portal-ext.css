@@ -1,0 +1,416 @@
+/* ==========================================================================
+   USER PORTAL & ADVANCED ADMIN CONSOLE EXTENSIONS
+   Role Switcher, Self-Service App Catalog, Hardware Request, Server Telemetry
+   ========================================================================== */
+
+/* Role Switcher Widget */
+.role-switcher-box {
+  display: flex;
+  align-items: center;
+  background: var(--bg-card-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 4px;
+}
+
+.role-switcher-btn {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.role-switcher-btn:hover {
+  color: var(--text-main);
+}
+
+.role-switcher-btn.active {
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+}
+
+.role-switcher-btn.active.admin-mode {
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+}
+
+.role-switcher-btn.active.user-mode {
+  background: linear-gradient(135deg, #059669, #10b981);
+}
+
+/* Maintenance Mode Top Banner */
+.maintenance-banner {
+  background: linear-gradient(90deg, #b45309, #d97706, #b45309);
+  color: #ffffff;
+  padding: 9px 24px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
+  animation: bannerGlow 2s infinite alternate;
+}
+
+.maintenance-banner.show {
+  display: flex;
+}
+
+@keyframes bannerGlow {
+  0% { opacity: 0.94; }
+  100% { opacity: 1; }
+}
+
+/* User Portal Specific Badges & Layouts */
+.user-hero-banner {
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+  color: #ffffff;
+  border-radius: var(--radius-xl);
+  padding: 28px 32px;
+  margin-bottom: 26px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid #059669;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+.user-hero-banner::after {
+  content: '';
+  position: absolute;
+  right: -30px;
+  top: -30px;
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.35) 0%, transparent 70%);
+}
+
+.user-hero-banner h2 {
+  color: #ffffff;
+  font-size: 24px;
+  margin-bottom: 6px;
+}
+
+.user-hero-banner p {
+  color: #d1fae5;
+  font-size: 13px;
+  max-width: 620px;
+}
+
+/* My Device Cards in User Portal */
+.my-devices-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+  margin-bottom: 28px;
+}
+
+.my-device-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: var(--transition);
+  position: relative;
+}
+
+.my-device-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-border);
+}
+
+.my-device-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.my-device-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-lg);
+  background: var(--primary-subtle);
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+  color: var(--primary);
+  flex-shrink: 0;
+}
+
+.my-device-specs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  background: var(--bg-card-subtle);
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  font-size: 12px;
+}
+
+.my-device-specs-grid small {
+  color: var(--text-muted);
+  font-size: 11px;
+  display: block;
+}
+
+.my-device-specs-grid strong {
+  color: var(--text-main);
+}
+
+/* Enterprise App Catalog */
+.app-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.app-catalog-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.app-catalog-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow-md);
+}
+
+.app-catalog-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: grid;
+  place-items: center;
+  font-size: 24px;
+  background: var(--bg-card-subtle);
+  margin-bottom: 12px;
+  border: 1px solid var(--border-light);
+}
+
+.app-catalog-meta {
+  flex: 1;
+  margin-bottom: 14px;
+}
+
+.app-catalog-meta h4 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.app-catalog-meta p {
+  font-size: 11px;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.app-catalog-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  background: var(--primary-subtle);
+  color: var(--primary);
+  text-transform: uppercase;
+}
+
+.app-install-btn {
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: var(--transition);
+}
+
+.app-install-btn.installed {
+  background: var(--success-bg);
+  color: var(--success);
+  border: 1px solid var(--success-border);
+  cursor: default;
+}
+
+.app-install-btn.installing {
+  background: var(--primary-subtle);
+  color: var(--primary);
+  border: 1px solid var(--primary-border);
+}
+
+/* Hardware Request Timeline Stepper */
+.hardware-request-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.request-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.request-timeline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  margin: 20px 10px 10px;
+}
+
+.request-timeline::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  left: 20px;
+  right: 20px;
+  height: 3px;
+  background: var(--border-color);
+  z-index: 1;
+}
+
+.timeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  gap: 6px;
+}
+
+.timeline-step-dot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  color: var(--text-muted);
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.timeline-step.completed .timeline-step-dot {
+  background: var(--success);
+  border-color: var(--success);
+  color: #ffffff;
+}
+
+.timeline-step.current .timeline-step-dot {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #ffffff;
+  box-shadow: 0 0 10px var(--primary);
+}
+
+.timeline-step-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.timeline-step.completed .timeline-step-label,
+.timeline-step.current .timeline-step-label {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+/* System Telemetry & Server Metrics in Admin */
+.telemetry-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.telemetry-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.telemetry-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.telemetry-val {
+  font-size: 24px;
+  font-weight: 800;
+  font-family: var(--font-heading);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .app-catalog-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .telemetry-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .my-devices-grid {
+    grid-template-columns: 1fr;
+  }
+  .app-catalog-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .app-catalog-grid {
+    grid-template-columns: 1fr;
+  }
+  .telemetry-grid {
+    grid-template-columns: 1fr;
+  }
+  .role-switcher-box {
+    margin-left: auto;
+  }
+}
