@@ -2036,6 +2036,7 @@
   window.TTH = {
     navigateTo,
     setRole,
+    toast,
     toggleRole: function () { setRole(state.role === 'admin' ? 'user' : 'admin'); },
     openAddDeviceModal,
     openQrEnrollModal,

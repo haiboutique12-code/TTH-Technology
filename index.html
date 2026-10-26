@@ -14,8 +14,452 @@
   <!-- Design System Stylesheet & Portal Extensions -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/portal-ext.css">
+  <link rel="stylesheet" href="css/landing-auth.css">
 </head>
 <body>
+
+<!-- =========================================================================
+     LANDING & AUTH PORTAL WITH 4K DYNAMIC MOTION VIDEO INTRO
+     ========================================================================= -->
+<div class="landing-portal" id="landingPortal">
+
+  <!-- Dynamic Motion Video Background & Cyber Particle Canvas -->
+  <div class="landing-video-wrapper">
+    <video class="landing-video-element" id="landingBgVideo" autoplay muted loop playsinline>
+      <source src="https://cdn.pixabay.com/video/2019/10/24/28236-368501609_large.mp4" type="video/mp4">
+      <source src="https://cdn.pixabay.com/video/2021/07/30/83228-581349035_large.mp4" type="video/mp4">
+    </video>
+    <canvas class="landing-canvas-matrix" id="cyberCanvas"></canvas>
+    <div class="landing-video-overlay"></div>
+  </div>
+
+  <!-- Interactive Floating Video Control Dock -->
+  <div class="video-control-dock" role="toolbar" aria-label="Điều khiển video nền">
+    <div class="video-badge-pill">
+      <span class="video-pulse-dot"></span>
+      <span id="videoCurrentStreamName">Cyber Matrix 4K</span>
+    </div>
+    <button class="video-control-btn" id="videoTogglePlayBtn" title="Tạm dừng / Tiếp tục video nền">
+      <span>⏸</span>
+      <span>Tạm dừng</span>
+    </button>
+    <button class="video-control-btn" id="videoToggleMuteBtn" title="Bật / Tắt âm thanh">
+      <span>🔇</span>
+      <span>Âm thanh</span>
+    </button>
+    <button class="video-control-btn" id="videoSwitchStreamBtn" title="Đổi video hiệu ứng công nghệ">
+      <span>🎞️</span>
+      <span>Đổi luồng video</span>
+    </button>
+  </div>
+
+  <!-- Landing Top Navigation Bar -->
+  <nav class="landing-navbar">
+    <div class="landing-brand" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+      <div class="landing-logo-cube">TTH</div>
+      <div class="landing-brand-text">
+        <h1>TTH Technology</h1>
+        <span>ENTERPRISE DEVICE INTELLIGENCE &amp; ZERO-TRUST</span>
+      </div>
+    </div>
+
+    <div class="landing-nav-links">
+      <a class="landing-nav-link" href="#landingFeatures">Tính Năng Cốt Lõi</a>
+      <a class="landing-nav-link" href="#landingTrust">Tiêu Chuẩn ISO/IEC</a>
+      <a class="landing-nav-link" href="javascript:void(0)" data-open-intro-video>🎬 Video Intro 4K</a>
+      <a class="landing-nav-link" href="javascript:void(0)" onclick="alert('Đường dây nóng IT Enterprise: 1900 8899\nEmail hỗ trợ: security@tth.vn')">Hỗ Trợ 24/7</a>
+    </div>
+
+    <div class="landing-nav-actions">
+      <button class="btn-landing-ghost" data-quick-role="guest" title="Vào trực tiếp giao diện quản trị không cần mật khẩu">
+        <span>⚡</span>
+        <span>Trải Nghiệm Demo</span>
+      </button>
+      <button class="btn-landing-ghost" data-switch-tab="login" onclick="document.getElementById('authCardAnchor').scrollIntoView({behavior:'smooth'})">
+        <span>🔐</span>
+        <span>Đăng Nhập</span>
+      </button>
+      <button class="btn-landing-primary" data-switch-tab="register" onclick="document.getElementById('authCardAnchor').scrollIntoView({behavior:'smooth'})">
+        <span>✨</span>
+        <span>Đăng Ký Miễn Phí</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Hero Section with Dual Column Layout -->
+  <section class="landing-hero">
+    <div class="landing-hero-grid">
+
+      <!-- Left Column: Vision & Highlights -->
+      <div class="landing-hero-content">
+        <div class="hero-tag-pills">
+          <span class="hero-pill cyan">✨ NEXT-GEN MDM PLATFORM 2026</span>
+          <span class="hero-pill purple">🛡️ ZERO-TRUST ARCHITECTURE</span>
+          <span class="hero-pill">⚡ APNs &amp; KNOX 99.99% DIRECT</span>
+        </div>
+
+        <h2 class="landing-hero-title">
+          Nền Tảng Quản Trị Thiết Bị Tập Trung &amp; <br>
+          <span class="gradient-text">An Ninh Doanh Nghiệp Tối Thượng</span>
+        </h2>
+
+        <p class="landing-hero-desc">
+          Kiểm soát và bảo vệ toàn bộ điểm cuối máy tính macOS, Windows, thiết bị di động iOS &amp; Android trong một không gian điều khiển duy nhất. Tự động hóa tuân thủ an ninh, phân phối phần mềm bản quyền 1-chạm và cổng thông tin tự phục vụ nhân viên chuẩn quốc tế.
+        </p>
+
+        <!-- CTA Buttons with Intro Video Trigger -->
+        <div class="hero-cta-group">
+          <button class="btn-watch-intro" data-open-intro-video aria-label="Xem video intro nền tảng TTH Technology">
+            <span class="play-ring-icon">▶</span>
+            <span>XEM VIDEO INTRO NỀN TẢNG (4K CINEMATIC)</span>
+          </button>
+
+          <button class="btn-landing-ghost" data-quick-role="guest" style="padding: 13px 22px; font-size:13px;">
+            <span>⚡ Khám phá Chế độ Khách</span>
+          </button>
+        </div>
+
+        <!-- Key Stats Metrics Row -->
+        <div class="hero-stats-row">
+          <div class="hero-stat-card">
+            <span class="num">99.99%</span>
+            <span class="label">Uptime SLA Gateway</span>
+          </div>
+          <div class="hero-stat-card">
+            <span class="num">256-bit</span>
+            <span class="label">Mã hóa AES Zero-Trust</span>
+          </div>
+          <div class="hero-stat-card">
+            <span class="num">&lt; 0.5s</span>
+            <span class="label">Phản hồi lệnh APNs</span>
+          </div>
+          <div class="hero-stat-card">
+            <span class="num">500+</span>
+            <span class="label">Doanh nghiệp tin dùng</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Ultra-Gorgeous Glassmorphism Auth Card -->
+      <div class="landing-auth-wrapper" id="authCardAnchor">
+        <div class="landing-auth-card">
+          <div class="card-ambient-glow"></div>
+
+          <div class="auth-card-header">
+            <div class="auth-header-title">
+              <h3>Cổng Xác Thực An Toàn</h3>
+              <p>Truy cập hệ thống quản trị &amp; Cổng tự phục vụ</p>
+            </div>
+            <div class="auth-security-badge">
+              <span>🔒</span>
+              <span>ISO 27001 PASS</span>
+            </div>
+          </div>
+
+          <!-- Sliding Tab Switcher -->
+          <div class="auth-tab-bar" role="tablist">
+            <div class="auth-tab-slider" id="authTabSlider"></div>
+            <button class="auth-tab-btn active" id="authTabLogin" role="tab" aria-selected="true">
+              <span>🔐</span>
+              <span>ĐĂNG NHẬP</span>
+            </button>
+            <button class="auth-tab-btn" id="authTabRegister" role="tab" aria-selected="false">
+              <span>✨</span>
+              <span>TẠO TÀI KHOẢN</span>
+            </button>
+          </div>
+
+          <!-- PANEL 1: LOGIN FORM -->
+          <div class="auth-panel active" id="authPanelLogin">
+            <form id="loginForm" autocomplete="on">
+              <div class="auth-form-group">
+                <label class="auth-form-label" for="loginEmailInput">
+                  <span>Email hoặc Tên đăng nhập</span>
+                  <span style="color:#64748b; font-size:10px;">Domain @tth.vn</span>
+                </label>
+                <div class="auth-input-wrapper">
+                  <span class="auth-input-icon">✉️</span>
+                  <input type="text" id="loginEmailInput" class="auth-input-control" required placeholder="VD: security@tth.vn hoặc email doanh nghiệp" value="security@tth.vn">
+                </div>
+              </div>
+
+              <div class="auth-form-group">
+                <label class="auth-form-label" for="loginPasswordInput">
+                  <span>Mật khẩu bảo mật</span>
+                  <span class="auth-link" onclick="alert('Hệ thống đã gửi liên kết khôi phục mật khẩu OTP vào email đăng ký của bạn!')">Quên mật khẩu?</span>
+                </label>
+                <div class="auth-input-wrapper">
+                  <span class="auth-input-icon">🔒</span>
+                  <input type="password" id="loginPasswordInput" class="auth-input-control" required placeholder="Nhập mật khẩu của bạn" value="AdminPass@2026">
+                  <button type="button" class="auth-toggle-pwd-btn" aria-label="Hiện/ẩn mật khẩu">👁️</button>
+                </div>
+              </div>
+
+              <div class="auth-helper-row">
+                <label class="auth-checkbox-label">
+                  <input type="checkbox" id="loginRememberMe" checked>
+                  <span>Ghi nhớ phiên đăng nhập (30 ngày)</span>
+                </label>
+              </div>
+
+              <button type="submit" class="btn-auth-submit">
+                <span>ĐĂNG NHẬP VÀO HỆ THỐNG</span>
+                <span>→</span>
+              </button>
+            </form>
+
+            <div class="auth-divider">hoặc xác thực bảo mật</div>
+
+            <!-- Biometric Auth Trigger -->
+            <button type="button" class="btn-biometric-auth" id="biometricAuthBtn">
+              <span style="font-size:16px;">🪪</span>
+              <span>Đăng nhập nhanh bằng Face ID / Vân tay FIDO2</span>
+            </button>
+
+            <!-- One-Click Preset Credentials -->
+            <div style="font-size:10px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase;">Tài khoản Demo một chạm:</div>
+            <div class="quick-login-grid">
+              <div class="quick-login-card" data-quick-role="admin">
+                <div class="role-title">👑 Quản Trị Viên (Admin)</div>
+                <div class="role-desc">Toàn quyền MDM, APNs &amp; Báo cáo</div>
+              </div>
+              <div class="quick-login-card" data-quick-role="user">
+                <div class="role-title">👤 Nhân Viên (User)</div>
+                <div class="role-desc">Cổng tự phục vụ &amp; App Catalog</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL 2: REGISTER FORM -->
+          <div class="auth-panel" id="authPanelRegister">
+            <form id="registerForm">
+              <div class="auth-form-group">
+                <label class="auth-form-label" for="regNameInput">Họ và tên đại diện *</label>
+                <div class="auth-input-wrapper">
+                  <span class="auth-input-icon">👤</span>
+                  <input type="text" id="regNameInput" class="auth-input-control" required placeholder="VD: Nguyễn Văn An">
+                </div>
+              </div>
+
+              <div class="auth-form-group">
+                <label class="auth-form-label" for="regEmailInput">Email doanh nghiệp *</label>
+                <div class="auth-input-wrapper">
+                  <span class="auth-input-icon">✉️</span>
+                  <input type="email" id="regEmailInput" class="auth-input-control" required placeholder="VD: an.nguyen@congty.com">
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <div class="auth-form-group">
+                  <label class="auth-form-label" for="regCompanyInput">Tên tổ chức *</label>
+                  <div class="auth-input-wrapper">
+                    <span class="auth-input-icon">🏢</span>
+                    <input type="text" id="regCompanyInput" class="auth-input-control" required placeholder="Tên Công ty">
+                  </div>
+                </div>
+
+                <div class="auth-form-group">
+                  <label class="auth-form-label" for="regRoleSelect">Vai trò mong muốn</label>
+                  <select id="regRoleSelect" class="auth-input-control" style="padding-left:14px;">
+                    <option value="admin">Quản trị viên IT (Admin)</option>
+                    <option value="user">Nhân viên sử dụng (User)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="auth-form-group">
+                <label class="auth-form-label" for="regPasswordInput">
+                  <span>Mật khẩu bảo mật *</span>
+                  <span id="pwdStrengthText" class="pwd-strength-text">Độ bảo mật</span>
+                </label>
+                <div class="auth-input-wrapper">
+                  <span class="auth-input-icon">🔒</span>
+                  <input type="password" id="regPasswordInput" class="auth-input-control" required placeholder="Tối thiểu 8 ký tự, số và chữ hoa">
+                  <button type="button" class="auth-toggle-pwd-btn" aria-label="Hiện/ẩn mật khẩu">👁️</button>
+                </div>
+                <div class="pwd-strength-box">
+                  <div class="pwd-strength-bar" id="pwdBar1"></div>
+                  <div class="pwd-strength-bar" id="pwdBar2"></div>
+                  <div class="pwd-strength-bar" id="pwdBar3"></div>
+                  <div class="pwd-strength-bar" id="pwdBar4"></div>
+                </div>
+              </div>
+
+              <div class="auth-helper-row" style="margin-bottom:14px;">
+                <label class="auth-checkbox-label" style="font-size:11px;">
+                  <input type="checkbox" required checked>
+                  <span>Tôi đồng ý với <a class="auth-link" href="javascript:void(0)" onclick="alert('Chính sách bảo mật TTH Technology tuân thủ ISO 27001 và Nghị định 13/2023/NĐ-CP.')">Điều khoản &amp; Bảo mật</a></span>
+                </label>
+              </div>
+
+              <button type="submit" class="btn-auth-submit">
+                <span>TẠO TÀI KHOẢN DOANH NGHIỆP MIỄN PHÍ</span>
+                <span>✨</span>
+              </button>
+            </form>
+
+            <div style="text-align:center; margin-top:12px; font-size:11px; color:#94a3b8;">
+              Đã có tài khoản? <a class="auth-link" data-switch-tab="login" href="javascript:void(0)">Đăng nhập ngay</a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- FEATURES SECTION -->
+  <section class="landing-section" id="landingFeatures">
+    <div class="section-header-center">
+      <h2>Kiến Trúc Quản Trị Điểm Cuối Thế Hệ Mới</h2>
+      <p>Bảo vệ toàn diện, chuẩn hóa cấu hình từ xa và nâng cao năng suất làm việc cho hàng ngàn nhân viên trong môi trường làm việc linh hoạt (Hybrid Work).</p>
+    </div>
+
+    <div class="landing-features-grid">
+      <div class="landing-feature-card">
+        <div class="feature-icon-box">🖥️</div>
+        <h4>Đa Nền Tảng Thống Nhất</h4>
+        <p>Quản lý toàn bộ thiết bị Apple macOS/iOS, máy trạm Windows 11 Enterprise, Android Samsung Knox và Linux trong một bảng điều khiển tập trung duy nhất.</p>
+      </div>
+
+      <div class="landing-feature-card">
+        <div class="feature-icon-box">🛡️</div>
+        <h4>An Ninh Mạng Zero-Trust</h4>
+        <p>Bắt buộc mã hóa toàn bộ ổ đĩa BitLocker và FileVault 256-bit AES. Phát hiện xâm nhập, khóa màn hình từ xa và xóa dữ liệu khẩn cấp chỉ trong 0.5 giây.</p>
+      </div>
+
+      <div class="landing-feature-card">
+        <div class="feature-icon-box">📦</div>
+        <h4>Cửa Hàng Ứng Dụng Nội Bộ</h4>
+        <p>Phân phối phần mềm bản quyền (Slack, Figma, Office 365) tự động qua Apple VPP &amp; Google Managed Play mà không cần nhân viên nhập Apple ID cá nhân.</p>
+      </div>
+
+      <div class="landing-feature-card">
+        <div class="feature-icon-box">📊</div>
+        <h4>Đo Tải &amp; Giám Sát Telemetry</h4>
+        <p>Theo dõi thời gian thực tình trạng pin, ổ cứng, phiên bản bản vá bảo mật, thông lượng máy chủ APNs và nhật ký kiểm toán SOC theo chuẩn quốc tế.</p>
+      </div>
+    </div>
+
+    <!-- Trust Badges Strip -->
+    <div class="trust-strip" id="landingTrust">
+      <div class="trust-badge-item">
+        <span class="badge-icon">🛡️</span>
+        <span>ISO/IEC 27001:2022 Certified</span>
+      </div>
+      <div class="trust-badge-item">
+        <span class="badge-icon">🔒</span>
+        <span>SOC 2 Type II Audited</span>
+      </div>
+      <div class="trust-badge-item">
+        <span class="badge-icon">⚡</span>
+        <span>Apple APNs &amp; Google FCM Direct</span>
+      </div>
+      <div class="trust-badge-item">
+        <span class="badge-icon">⚖️</span>
+        <span>Tuân thủ Nghị định 13/2023/NĐ-CP</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- LANDING FOOTER -->
+  <footer class="landing-footer">
+    <div>
+      © 2026 TTH Technology Joint Stock Co. Nền tảng quản lý thiết bị tập trung doanh nghiệp.
+    </div>
+    <div style="display:flex; gap:16px;">
+      <a class="auth-link" href="javascript:void(0)" onclick="alert('Hỗ trợ kỹ thuật 24/7: 1900 8899 - security@tth.vn')">Hỗ trợ kỹ thuật 24/7</a>
+      <a class="auth-link" href="javascript:void(0)" onclick="alert('Tài liệu API và SDK tích hợp MDM Gateway: https://developer.tth.vn')">Tài liệu API MDM</a>
+    </div>
+  </footer>
+
+</div>
+
+<!-- =========================================================================
+     CINEMATIC 4K INTRO VIDEO MODAL EXPERIENCE
+     ========================================================================= -->
+<div class="intro-modal-backdrop" id="introVideoModal" role="dialog" aria-modal="true" aria-label="Video giới thiệu TTH Technology">
+  <div class="intro-modal-container">
+    
+    <!-- Modal Header -->
+    <div class="intro-modal-header">
+      <div class="intro-header-left">
+        <span style="font-size:18px;">🎬</span>
+        <h3>VIDEO GIỚI THIỆU NỀN TẢNG TTH TECHNOLOGY 2026 (4K ULTRA-TECH)</h3>
+        <div class="intro-telemetry-tag">
+          <span class="video-pulse-dot"></span>
+          <span>APNs 99.99% ONLINE</span>
+        </div>
+      </div>
+      <button class="intro-modal-close" data-close-intro-modal aria-label="Đóng video intro">✕</button>
+    </div>
+
+    <!-- 16:9 Video Player Screen -->
+    <div class="intro-screen-wrapper">
+      <video class="intro-main-video" id="introMainVideo" playsinline>
+        <source src="https://cdn.pixabay.com/video/2019/10/24/28236-368501609_large.mp4" type="video/mp4">
+        <source src="https://cdn.pixabay.com/video/2021/07/30/83228-581349035_large.mp4" type="video/mp4">
+      </video>
+
+      <!-- HUD Telemetry & Dynamic Subtitles Overlay -->
+      <div class="intro-hud-overlay">
+        <div class="intro-hud-corner">
+          <span>● LIVE STREAM</span>
+          <span>|</span>
+          <span>AES-256 ENCRYPTED</span>
+          <span>|</span>
+          <span>FPS: 60.0</span>
+        </div>
+
+        <div class="intro-subtitle-box" id="introSubtitleText">
+          Chào mừng bạn đến với TTH Technology — Nền tảng Quản trị Thiết bị Doanh nghiệp Tập trung (MDM).
+        </div>
+      </div>
+    </div>
+
+    <!-- Video Player Timeline & Controls -->
+    <div class="intro-player-controls">
+      <button class="btn-landing-ghost" id="introModalPlayPause" style="padding:6px 14px; font-size:12px;">⏸ Tạm dừng</button>
+      
+      <div class="intro-timeline-bar" id="introTimelineBar" title="Nhấn để tua video">
+        <div class="intro-timeline-fill" id="introTimelineFill"></div>
+      </div>
+
+      <button class="btn-landing-ghost" id="introModalMuteBtn" style="padding:6px 14px; font-size:12px;">🔇 Bật tiếng</button>
+      
+      <button class="btn-landing-primary" data-close-intro-modal onclick="document.getElementById('authCardAnchor').scrollIntoView({behavior:'smooth'})" style="padding:6px 16px; font-size:12px;">
+        <span>Bắt đầu ngay</span>
+        <span>→</span>
+      </button>
+    </div>
+
+    <!-- Chapters Navigation Dock -->
+    <div class="intro-chapters-dock">
+      <span style="font-size:11px; font-weight:800; color:#cbd5e1; margin-right:6px;">MỤC LỤC VIDEO:</span>
+      <button class="intro-chapter-btn active" data-intro-time="0">00:00 Tổng quan TTH MDM</button>
+      <button class="intro-chapter-btn" data-intro-time="7">00:07 Kết nối APNs &amp; Knox</button>
+      <button class="intro-chapter-btn" data-intro-time="15">00:15 An ninh Zero-Trust</button>
+      <button class="intro-chapter-btn" data-intro-time="23">00:23 Cổng tự phục vụ nhân viên</button>
+      <button class="intro-chapter-btn" data-intro-time="32">00:32 Trải nghiệm ngay</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- =========================================================================
+     BIOMETRIC AUTHENTICATION SIMULATION MODAL
+     ========================================================================= -->
+<div class="biometric-scan-modal" id="biometricScanModal">
+  <div class="biometric-box">
+    <div class="biometric-scanner-ring">
+      <div class="biometric-laser"></div>
+      <span>🪪</span>
+    </div>
+    <h3 style="font-size:16px; font-weight:800; color:#fff; margin-bottom:6px;">Đang quét sinh trắc học...</h3>
+    <p style="font-size:12px; color:#94a3b8;">Xác thực Face ID / Vân tay FIDO2 bảo mật qua TPM 2.0</p>
+  </div>
+</div>
 
 <!-- Top Maintenance Mode Broadcast Alert Banner (Toggleable) -->
 <div class="maintenance-banner" id="maintenanceBanner">
@@ -170,6 +614,7 @@
           <div class="user-role" id="sidebarUserEmail">security@tth.vn · SOC</div>
         </div>
         <button class="topbar-icon-btn" style="width:30px; height:30px; border:none; background:transparent; color:#94a3b8;" onclick="TTH.toggleRole()" title="Nhấn để đổi vai trò nhanh">⇄</button>
+        <button class="topbar-icon-btn" style="width:30px; height:30px; border:none; background:transparent; color:#ef4444;" onclick="TTH.signOut()" title="Đăng xuất khỏi hệ thống">🚪</button>
       </div>
     </div>
   </aside>
@@ -226,6 +671,17 @@
 
         <!-- Quick Help -->
         <button class="topbar-icon-btn" data-goto="support" title="Trợ giúp">❓</button>
+
+        <!-- Home & Intro Landing Trigger -->
+        <button class="topbar-icon-btn" onclick="TTH.showLandingPortal()" title="Trang Chủ & Video Intro" style="width:auto; padding:0 10px; display:flex; align-items:center; gap:5px; font-weight:700; font-size:12px; background:rgba(59,130,246,0.15); border:1px solid rgba(59,130,246,0.35); color:#60a5fa;">
+          <span>🎬</span>
+          <span>Intro</span>
+        </button>
+
+        <!-- Sign Out Button -->
+        <button class="topbar-icon-btn" onclick="TTH.signOut()" title="Đăng xuất khỏi hệ thống" style="color:#ef4444; border-color:rgba(239,68,68,0.3);">
+          🚪
+        </button>
 
         <!-- User Avatar -->
         <div class="user-avatar" id="topbarUserAvatar" style="width:36px; height:36px; cursor:pointer;" onclick="TTH.toggleRole()" title="Nhấp để đổi giao diện User / Admin">TH</div>
@@ -1884,6 +2340,7 @@
 
 <!-- Core Engine Script -->
 <script src="js/app.js"></script>
+<script src="js/landing-auth.js"></script>
 
 </body>
 </html>
