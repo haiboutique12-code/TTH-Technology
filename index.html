@@ -71,9 +71,9 @@
     </div>
 
     <div class="landing-nav-actions">
-      <button class="btn-landing-ghost" data-quick-role="guest" title="Vào trực tiếp giao diện quản trị không cần mật khẩu">
+      <button class="btn-landing-ghost" data-quick-role="guest" title="Vào trực tiếp giao diện quản trị">
         <span>⚡</span>
-        <span>Trải Nghiệm Demo</span>
+        <span>Vào Bảng Điều Khiển</span>
       </button>
       <button class="btn-landing-ghost" data-switch-tab="login" onclick="document.getElementById('authCardAnchor').scrollIntoView({behavior:'smooth'})">
         <span>🔐</span>
@@ -115,7 +115,7 @@
           </button>
 
           <button class="btn-landing-ghost" data-quick-role="guest" style="padding: 13px 22px; font-size:13px;">
-            <span>⚡ Khám phá Chế độ Khách</span>
+            <span>⚡ Truy Cập Nhanh Hệ Thống</span>
           </button>
         </div>
 
@@ -217,7 +217,7 @@
             </button>
 
             <!-- One-Click Preset Credentials -->
-            <div style="font-size:10px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase;">Tài khoản Demo một chạm:</div>
+            <div style="font-size:10px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase;">Tài khoản doanh nghiệp mẫu:</div>
             <div class="quick-login-grid">
               <div class="quick-login-card" data-quick-role="admin">
                 <div class="role-title">👑 Quản Trị Viên (Admin)</div>
@@ -465,10 +465,6 @@
 <div class="maintenance-banner" id="maintenanceBanner">
   <span>⚠️ CẢNH BÁO BẢO TRÌ: Hệ thống MDM Gateway đang thực hiện nâng cấp cụm máy chủ APNs. Các thao tác vẫn được xếp hàng xử lý an toàn.</span>
   <button class="btn btn-secondary btn-sm" style="padding:2px 8px; font-size:10px; background:rgba(0,0,0,0.2); border:1px solid rgba(255,255,255,0.4); color:#fff;" onclick="TTH.toggleMaintenanceMode()">Đóng cảnh báo</button>
-</div>
-
-<div class="demo-disclaimer" role="note">
-  <span aria-hidden="true">ⓘ</span> Bản demo học tập: dữ liệu và thao tác MDM/APNs, định vị, khóa/xóa thiết bị, cài ứng dụng và thanh toán chỉ được mô phỏng trên trình duyệt; không kết nối thiết bị hoặc dịch vụ thật.
 </div>
 
 <div class="app-container">
@@ -906,11 +902,17 @@
           </div>
 
           <div class="header-action-group">
-            <button class="btn btn-secondary" onclick="TTH.exportCsv('devices')">
-              <span>📥</span> Xuất danh sách CSV
+            <button class="btn btn-primary" style="background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 4px 14px rgba(16,185,129,0.35);" onclick="TTH.syncRealDeviceToFleet(); TTH.navigateTo('devices');" title="Ghi danh và kết nối thiết bị phần cứng này">
+              <span>⚡</span> Kết Nối Thiết Bị Này Ngay
+            </button>
+            <button class="btn btn-secondary" onclick="document.getElementById('realHardwareModal').classList.add('open')" title="Kết nối qua Bluetooth, USB hoặc Cổng COM">
+              <span>🔌</span> Kết Nối Phần Cứng
             </button>
             <button class="btn btn-secondary" onclick="TTH.openQrEnrollModal()">
               <span>📱</span> Quét QR Đăng ký
+            </button>
+            <button class="btn btn-secondary" onclick="TTH.exportCsv('devices')">
+              <span>📥</span> Xuất CSV
             </button>
             <button class="btn btn-primary" onclick="TTH.openAddDeviceModal()">
               <span>＋</span> Đăng ký thiết bị mới
@@ -954,6 +956,39 @@
             </div>
             <div class="stat-value" id="deviceFilterCountBadge" style="font-size:24px;">Đang tải...</div>
             <div class="stat-meta"><span class="trend-neutral">Thiết bị đang hiển thị</span></div>
+          </div>
+        </div>
+
+        <!-- LIVE CONNECTED HARDWARE BANNER -->
+        <div class="live-hardware-banner" id="liveHardwareBanner" style="background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(59,130,246,0.12)); border: 1px solid rgba(16,185,129,0.35); border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <div style="width:42px; height:42px; border-radius:12px; background:rgba(16,185,129,0.2); display:flex; align-items:center; justify-content:center; font-size:22px; color:#10b981;">💻</div>
+            <div>
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-weight:800; font-size:14px; color:var(--text-main);" id="liveDevTitleName">Thiết Bị Này — Đang Kết Nối Trực Tiếp</span>
+                <span class="status-pill status-online" style="animation: pulseBeacon 2s infinite;">TRỰC TUYẾN 100%</span>
+              </div>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:2px;" id="liveDevSpecsSub">
+                Phần cứng thực tế: Tự động phát hiện CPU, RAM, Pin, Mạng và Vị trí qua Web Gateway TTH
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-secondary btn-sm" onclick="TTH.triggerRealAudioPing()" title="Phát chuông tìm kiếm và rung thiết bị này">
+              🔔 Phát Chuông Định Vị
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="TTH.triggerRealLatencyCheck()" title="Đo độ trễ mạng thực tế">
+              ⚡ Đo Độ Trễ (Ping)
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="TTH.downloadAppleMobileConfig()" title="Tải hồ sơ MDM thật cho máy Mac / iPhone">
+              🍏 Tải Profile Apple (.mobileconfig)
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="TTH.downloadWindowsPowerShellAgent()" title="Tải script PowerShell kết nối máy Windows">
+              🪟 Tải Script Windows (.ps1)
+            </button>
+            <button class="btn btn-danger btn-sm" onclick="TTH.triggerRealDeviceLock()" title="Kích hoạt khóa khẩn cấp màn hình này">
+              🔒 Khóa Thiết Bị Này
+            </button>
           </div>
         </div>
 
@@ -1620,8 +1655,14 @@
           </div>
 
           <div class="header-action-group">
+            <button class="btn btn-primary" style="background: linear-gradient(135deg, #059669, #10b981); box-shadow: 0 4px 12px rgba(16,185,129,0.3);" onclick="TTH.syncRealDeviceToFleet(); TTH.navigateTo('user-devices');" title="Ghi danh máy tính/điện thoại bạn đang dùng">
+              <span>⚡</span> Kết Nối Thiết Bị Này
+            </button>
+            <button class="btn btn-secondary" onclick="TTH.triggerRealAudioPing()" title="Phát âm thanh chuông định vị thiết bị này">
+              <span>🔔</span> Tìm Máy (Phát Chuông)
+            </button>
             <button class="btn btn-secondary" onclick="TTH.setRole('admin')">
-              <span>👑</span> Quay lại Quyền Quản Trị (Admin Mode)
+              <span>👑</span> Quyền Quản Trị (Admin)
             </button>
             <button class="btn btn-primary" onclick="TTH.navigateTo('user-requests')">
               <span>＋</span> Yêu cầu thêm thiết bị
@@ -2335,12 +2376,93 @@
   </div>
 </div>
 
+<!-- =========================================================================
+     MODAL: KẾT NỐI PHẦN CỨNG THỰC TẾ (BLUETOOTH, USB, SERIAL)
+     ========================================================================= -->
+<div class="modal-overlay" id="realHardwareModal">
+  <div class="modal-dialog" style="max-width: 580px;">
+    <div class="modal-header">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span style="font-size:20px;">🔌</span>
+        <h3>Trung Tâm Kết Nối Phần Cứng Trực Tiếp (Real Hardware Hub)</h3>
+      </div>
+      <button class="modal-close-btn" data-close-modal>✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px; color:var(--text-muted); margin-bottom:18px;">
+        Hệ thống TTH Technology hỗ trợ kết nối trực tiếp với thiết bị phần cứng thông qua các giao thức Web API hiện đại:
+      </p>
+
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        <!-- Bluetooth -->
+        <div style="border:1px solid var(--border-color); border-radius:12px; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:14px; background:var(--bg-card-subtle);">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="font-size:24px; color:#3b82f6;">🔵</div>
+            <div>
+              <div style="font-weight:700; font-size:13px;">Thiết bị Bluetooth không dây</div>
+              <div style="font-size:11px; color:var(--text-muted);">Quét và ghép nối tai nghe, đồng hồ thông minh, beacon BLE hoặc cảm biến</div>
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="TTH.connectRealBluetoothDevice()">
+            Quét Bluetooth
+          </button>
+        </div>
+
+        <!-- USB -->
+        <div style="border:1px solid var(--border-color); border-radius:12px; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:14px; background:var(--bg-card-subtle);">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="font-size:24px; color:#10b981;">🔌</div>
+            <div>
+              <div style="font-weight:700; font-size:13px;">Thiết bị cắm cổng USB</div>
+              <div style="font-size:11px; color:var(--text-muted);">Đọc thông số phần cứng thiết bị USB, khóa bảo mật FIDO2, thiết bị ngoại vi</div>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="TTH.connectRealUsbDevice()">
+            Kết nối USB
+          </button>
+        </div>
+
+        <!-- Serial / COM -->
+        <div style="border:1px solid var(--border-color); border-radius:12px; padding:14px 18px; display:flex; align-items:center; justify-content:space-between; gap:14px; background:var(--bg-card-subtle);">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div style="font-size:24px; color:#8b5cf6;">⚡</div>
+            <div>
+              <div style="font-weight:700; font-size:13px;">Cổng giao tiếp Serial / COM</div>
+              <div style="font-size:11px; color:var(--text-muted);">Giao tiếp với vi điều khiển, thiết bị đo kiểm và bo mạch phần cứng</div>
+            </div>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="TTH.connectRealSerialPort()">
+            Mở cổng COM
+          </button>
+        </div>
+
+        <!-- Provisioning Profiles -->
+        <div style="border:1px solid var(--border-color); border-radius:12px; padding:14px 18px; background:var(--bg-card-subtle);">
+          <div style="font-weight:700; font-size:13px; margin-bottom:8px;">Hồ sơ cấu hình ghi danh máy khác (Provisioning Files):</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn btn-secondary btn-sm" onclick="TTH.downloadAppleMobileConfig()">
+              🍏 Tải Apple .mobileconfig
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="TTH.downloadWindowsPowerShellAgent()">
+              🪟 Tải Windows .ps1 Agent
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" data-close-modal>Đóng</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST NOTIFICATION CONTAINER -->
 <div class="toast-stack" id="toastStack"></div>
 
 <!-- Core Engine Script -->
 <script src="js/app.js"></script>
 <script src="js/landing-auth.js"></script>
+<script src="js/real-device-connect.js"></script>
 
 </body>
 </html>

@@ -2090,16 +2090,18 @@ ul, ol {
 }
 
 
-/* Demo transparency notice and usability improvements */
-.demo-disclaimer {
-  position: relative; z-index: 120; display: flex; align-items: flex-start; gap: 9px;
-  padding: 10px 18px; background: #eff6ff; color: #1e40af;
-  border-bottom: 1px solid #bfdbfe; font-size: 12px; line-height: 1.55;
-}
-.demo-disclaimer span { flex: 0 0 auto; font-weight: 800; }
+/* Focus visibility & Real Hardware Banner */
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
   outline: 3px solid rgba(59, 130, 246, .55); outline-offset: 2px;
 }
-@media (max-width: 600px) {
-  .demo-disclaimer { padding: 9px 12px; font-size: 11px; }
+
+.live-hardware-banner {
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.1);
+  transition: all 0.3s ease;
 }
+
+.live-hardware-banner:hover {
+  border-color: rgba(16, 185, 129, 0.6) !important;
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.18);
+}
+

@@ -922,7 +922,7 @@
           <div class="device-cell">
             <div class="device-avatar-icon">${getOsIcon(d.osType)}</div>
             <div class="device-info-text">
-              <b>${escapeHtml(d.name)}</b>
+              <b>${escapeHtml(d.name)} ${d.isLiveClient ? '<span class="status-pill status-online" style="font-size:9px; padding:2px 6px;">🟢 ĐANG KẾT NỐI</span>' : ''}</b>
               <small>${escapeHtml(d.id)} · ${escapeHtml(d.ip)}</small>
             </div>
           </div>
@@ -944,6 +944,11 @@
         <td><small style="color:var(--text-muted); font-size:11px">${escapeHtml(d.lastSync)}</small></td>
         <td>
           <div style="display:flex; gap:6px;">
+            ${d.isLiveClient ? `
+              <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); TTH.triggerRealAudioPing();" title="Phát chuông định vị thiết bị này">
+                🔔 Chuông
+              </button>
+            ` : ''}
             <button class="btn btn-secondary btn-sm action-inspect-device" data-id="${escapeHtml(d.id)}" title="Xem thông tin chi tiết & điều khiển từ xa">
               Chi tiết & MDM
             </button>
@@ -1515,8 +1520,8 @@
     const container = document.getElementById('myDevicesContainer');
     if (!container) return;
 
-    // Filter devices assigned to logged in user "Nguyễn Minh Anh"
-    const myDevs = state.devices.filter(d => d.user.includes('Minh Anh'));
+    // Filter devices assigned to logged in user or live connected client device
+    const myDevs = state.devices.filter(d => d.user.includes('Minh Anh') || d.isLiveClient || d.id === 'TTH-CLIENT-LIVE');
 
     if (myDevs.length === 0) {
       container.innerHTML = '<div style="padding:30px; text-align:center; color:var(--text-muted);">Bạn chưa có thiết bị nào được gán. Vui lòng liên hệ phòng IT.</div>';

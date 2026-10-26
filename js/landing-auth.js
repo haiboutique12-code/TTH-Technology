@@ -426,10 +426,10 @@
             role: 'user'
           });
         } else {
-          // Guest Demo
+          // Direct Access
           completeLogin({
-            name: 'Khách Trải Nghiệm Demo',
-            email: 'guest@tth.vn',
+            name: 'Quản Trị Viên Khách',
+            email: 'admin.guest@tth.vn',
             role: 'admin'
           });
         }
